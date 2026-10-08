@@ -139,6 +139,30 @@
   textarea.mnotas{min-height:36px;font-size:12.5px;resize:none;overflow:hidden;line-height:1.4;display:block}
   textarea.mnotas:disabled{background:transparent;border-color:transparent;color:var(--ink)}
   .addm{display:flex;gap:8px}
+  .mlogo{display:flex;align-items:center;gap:6px}
+  .mlogo .lg{height:34px;min-width:34px;max-width:110px;padding:4px 6px;background:#fff;border:1px solid var(--line);border-radius:7px;display:flex;align-items:center;justify-content:center}
+  .mlogo .lg img{max-height:24px;max-width:96px;display:block}
+  .mlogo .up{font-size:11.5px}
+  .mlogo .x{border:0;background:none;color:var(--mut);cursor:pointer;font-size:13px;padding:2px 4px}
+  .mlogo .x:hover{color:var(--danger)}
+
+  /* ===== plantillas ===== */
+  .badge{display:inline-block;min-width:17px;height:17px;line-height:17px;border-radius:9px;background:var(--acc);color:#fff;font-size:10.5px;font-weight:800;text-align:center;margin-left:6px;padding:0 5px;vertical-align:1px}
+  .psec{display:flex;align-items:center;gap:10px;margin:26px 0 10px}
+  .psec:first-child{margin-top:0}
+  .psec h2{font-size:14px;margin:0;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+  .psec .small{font-weight:500}
+  .prev{display:flex;gap:3px;flex-wrap:wrap;max-width:230px}
+  .prev svg{width:20px;height:20px;stroke:var(--mut);stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round;background:var(--soft);border-radius:4px;padding:2px}
+  .desc{border:1px solid transparent;background:transparent;color:var(--mut);font-size:12px;padding:3px 6px;border-radius:6px;width:100%;margin-top:3px;font-weight:500}
+  .desc:hover{border-color:var(--line)}
+  .desc:focus{outline:none;border-color:var(--acc);color:var(--ink)}
+  .st-pendiente{background:var(--diseno-bg);color:var(--diseno-ink)}
+  .st-aprobada{background:var(--listo-bg);color:var(--listo-ink)}
+  .st-rechazada{background:var(--danger-bg);color:var(--danger)}
+  .prop{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--mut);white-space:nowrap;cursor:pointer}
+  .pend-row td{background:var(--row-hover)}
+  .logo-img{max-height:56px;max-width:220px;display:block;margin:0 auto}
 
   /* ===== accesos ===== */
   .note{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--ink);margin-bottom:16px;line-height:1.55}
@@ -323,6 +347,7 @@
     <span class="nav-div"></span>
     <span class="nav-sub">Briefs de email</span>
     <a href="#" data-v="lista">Briefs</a>
+    <a href="#plantillas" data-v="plantillas">Plantillas<span class="badge" id="navPend" hidden></span></a>
     <a href="#marcas" data-v="marcas">Marcas</a>
     <a href="#accesos" data-v="accesos" id="navAccesos">Accesos</a>
     <div class="sp"></div>
@@ -342,6 +367,16 @@
         <input class="inp" id="fQ" type="search" placeholder="Buscar por campaña…">
       </div>
       <div class="tbl" id="lTabla"></div>
+    </div></div>
+  </section>
+
+  <!-- ═══ PLANTILLAS ═══ -->
+  <section class="view" id="vPlantillas" hidden>
+    <div class="page"><div class="page-in">
+      <div class="page-hd"><h1>Plantillas</h1><span class="muted" id="pCount"></span><div class="sp"></div>
+        <input class="inp" id="pQ" type="search" placeholder="Buscar plantilla…" style="min-width:220px">
+        <button class="btn-pri" id="btnNuevaTpl" onclick="abrirNuevaTpl()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Nueva plantilla</button></div>
+      <div id="pBody"></div>
     </div></div>
   </section>
 
@@ -365,9 +400,9 @@
   <!-- ═══ EDITOR ═══ -->
   <section class="view" id="vEditor" hidden>
     <div class="sub">
-      <button class="back" onclick="location.hash=''" title="Volver a los briefs"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="back" onclick="volver()" title="Volver"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg></button>
       <div class="steps" id="steps"><i></i><i></i><i></i></div>
-      <h2>Editor de Brief</h2>
+      <h2 id="eTitulo">Editor de Brief</h2>
       <span class="camp" id="campLbl"></span>
       <span class="ro-chip" id="roChip" hidden>Solo lectura</span>
       <div class="sp"></div>
@@ -388,7 +423,7 @@
           <div class="sh-head">
             <div class="sh-brand"><b></b><span id="brandName"></span></div>
             <div class="sh-title ed" data-m="campana" data-ph="Nombre de la campaña"></div>
-            <div class="sh-grid">
+            <div class="sh-grid" id="shGrid">
               <label>Asunto</label><div class="ed" data-m="asunto" data-ph="Asunto del email"></div>
               <label>Preheader</label><div class="ed" data-m="preheader" data-ph="Texto de preheader"></div>
               <label>Fecha de envío</label><div class="ed" data-m="fecha" data-ph="dd/mm"></div>
@@ -403,7 +438,7 @@
       <aside class="side" id="side">
         <div class="tabs">
           <button data-t="contenido" class="on" onclick="setTab('contenido')">Contenido</button>
-          <button data-t="plantillas" onclick="setTab('plantillas')">Plantillas</button>
+          <button data-t="plantillas" id="tabTplBtn" onclick="setTab('plantillas')">Plantillas</button>
         </div>
         <div class="tabp" id="tab-contenido">
           <div class="tiles" id="palList"></div>
@@ -414,7 +449,7 @@
           <div class="card">
             <div class="row"><input class="inp" style="flex:1" type="text" id="tplName" placeholder="Nombre de la plantilla" onkeydown="if(event.key==='Enter')saveTpl()">
               <button class="btn-pri" onclick="saveTpl()">Guardar</button></div>
-            <label class="small" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="tplGeneral"> General (para todas las marcas)</label>
+            <label class="small" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="tplGeneral"> <span id="tplGeneralLbl">General (para todas las marcas)</span></label>
           </div>
           <div class="sec">Plantillas disponibles</div>
           <div id="tplList"></div>
@@ -441,10 +476,20 @@
     <div class="ft"><button class="bt" onclick="cerrarModal()">Cancelar</button><button class="btn-pri" onclick="crearBrief()">Crear brief</button></div>
   </div>
 </div>
+<!-- modal: nueva plantilla -->
+<div class="ov" id="ovTpl" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="modal">
+    <h3>Nueva plantilla</h3>
+    <label>Nombre</label><input class="inp" id="ntNom" placeholder="Ej: Promo con cupón, Newsletter de contenido…" onkeydown="if(event.key==='Enter')crearTpl()">
+    <label>Para</label><select class="inp" id="ntAlc"></select>
+    <label>Descripción (opcional)</label><input class="inp" id="ntDesc" placeholder="Cuándo conviene usarla">
+    <div class="ft"><button class="bt" onclick="$('ovTpl').classList.remove('on')">Cancelar</button><button class="btn-pri" onclick="crearTpl()">Crear y editar</button></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION_APP = '2026-10-08.4';
+const VERSION_APP = '2026-10-08.5';
 const SB_URL  = 'https://ojzcxwhoinmljospgmfp.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemN4d2hvaW5tbGpvc3BnbWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDY5MTYsImV4cCI6MjA5MzQ4MjkxNn0.jmvVP3weuclrBpQJb57BwmHD77Ofy4CDe43cnmiSFCk';
 const sb = supabase.createClient(SB_URL, SB_ANON);
@@ -525,7 +570,7 @@ let cur = null;                 // brief abierto (con doc)
 let EDIT = false;               // ¿puede editar el brief abierto?
 
 const marcaById = id => D.marcas.find(m => m.id === id);
-const cfg = id => D.config[id] || {primario:'#f04e23', secundario:'#f1f1ee', notas:''};
+const cfg = id => D.config[id] || {primario:'#f04e23', secundario:'#f1f1ee', notas:'', logo_url:''};
 const nombreUsuario = () => me.nombre || me.email;
 function marcasVisibles(){
   // ojo: sem_marcas puede devolver más marcas por las políticas del semáforo/calendario
@@ -619,15 +664,24 @@ window.addEventListener('hashchange', () => { if (me) route(); });
 function route(){
   const h = location.hash.slice(1);
   if (h.startsWith('brief/')) return abrirBrief(+h.split('/')[1]);
+  if (h.startsWith('plantilla/')) return abrirPlantilla(+h.split('/')[1]);
   flushSave(); cur = null;
-  const v = h === 'marcas' ? 'marcas' : (h === 'accesos' && me.rol === 'admin') ? 'accesos' : 'lista';
+  const v = ['marcas','plantillas'].includes(h) ? h : (h === 'accesos' && me.rol === 'admin') ? 'accesos' : 'lista';
   mostrar(v);
-  ({lista:renderLista, marcas:renderMarcas, accesos:renderAccesos})[v]();
+  ({lista:renderLista, plantillas:renderPlantillas, marcas:renderMarcas, accesos:renderAccesos})[v]();
 }
 function mostrar(v){
-  ['lista','marcas','accesos','editor'].forEach(x => $('v' + x[0].toUpperCase() + x.slice(1)).hidden = x !== v);
-  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('on', a.dataset.v === (v === 'editor' ? 'lista' : v)));
+  ['lista','plantillas','marcas','accesos','editor'].forEach(x => $('v' + x[0].toUpperCase() + x.slice(1)).hidden = x !== v);
+  const navV = v === 'editor' ? (cur?.kind === 'tpl' ? 'plantillas' : 'lista') : v;
+  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('on', a.dataset.v === navV));
+  pintarPendientes();
 }
+// el admin ve cuántas plantillas propuestas esperan aprobación
+function pintarPendientes(){
+  const n = me?.rol === 'admin' ? D.plantillas.filter(p => p.propuesta === 'pendiente' && p.marca_id !== null).length : 0;
+  $('navPend').hidden = !n; $('navPend').textContent = n;
+}
+function volver(){ location.hash = cur?.kind === 'tpl' ? 'plantillas' : ''; }
 
 // ══ LISTA DE BRIEFS ══════════════════════════════════════════════════════════
 const filtros = Object.assign({marca:'', estado:'', q:''}, lsGet('brf_filtros') || {});
@@ -667,13 +721,14 @@ function pintarTabla(){
 }
 
 // nuevo brief
-function abrirNuevo(marcaId){
+function abrirNuevo(marcaId, tplId){
   const eds = marcasEditables();
   if (!eds.length) return toast('No tenés marcas para editar', true);
   const pref = marcaId || (+filtros.marca && puedeEditar(+filtros.marca) ? +filtros.marca : (eds.length === 1 ? eds[0].id : ''));
   $('nbMarca').innerHTML = (pref ? '' : '<option value="">Elegí la marca…</option>') + eds.map(m => `<option value="${m.id}">${esc(m.nombre)}</option>`).join('');
   $('nbMarca').value = pref || '';
   opcionesPlantilla();
+  if (tplId) $('nbTpl').value = tplId;
   $('ov').classList.add('on');
 }
 function cerrarModal(){ $('ov').classList.remove('on'); }
@@ -709,16 +764,124 @@ async function borrarBrief(id){
   D.briefs = D.briefs.filter(x => x.id !== id); pintarTabla(); toast('Brief borrado');
 }
 
+// ══ PLANTILLAS (biblioteca) ══════════════════════════════════════════════════
+// Generales: las arma y mantiene el admin. De marca: las arma quien edita la marca,
+// y puede proponerlas para todas; el admin las aprueba (se crea una copia general).
+const PROP_LABEL = {pendiente:'Esperando aprobación', aprobada:'Aprobada como general', rechazada:'No aprobada'};
+const miniPrev = p => `<div class="prev" title="${p.blocks.map(b => TYPES[b.type]?.label).join(' · ')}">${p.blocks.slice(0, 12).map(b => `<svg viewBox="0 0 40 40">${TYPES[b.type]?.ico || ''}</svg>`).join('')}</div>`;
+$('pQ').addEventListener('input', () => pintarPlantillas());
+function renderPlantillas(){
+  $('btnNuevaTpl').hidden = !(me.rol === 'admin' || marcasEditables().length);
+  pintarPlantillas();
+}
+function pintarPlantillas(){
+  const q = $('pQ').value.trim().toLowerCase();
+  const ok = p => !q || p.nombre.toLowerCase().includes(q) || (p.descripcion || '').toLowerCase().includes(q);
+  const visIds = marcasVisibles().map(m => m.id);
+  const generales = D.plantillas.filter(p => p.marca_id === null && ok(p)).sort((a,b) => a.nombre.localeCompare(b.nombre));
+  const deMarca = D.plantillas.filter(p => p.marca_id !== null && visIds.includes(p.marca_id) && ok(p))
+    .sort((a,b) => (marcaById(a.marca_id)?.nombre || '').localeCompare(marcaById(b.marca_id)?.nombre || '') || a.nombre.localeCompare(b.nombre));
+  const pend = me.rol === 'admin' ? deMarca.filter(p => p.propuesta === 'pendiente') : [];
+  $('pCount').textContent = (generales.length + deMarca.length) + ' plantillas';
+  const admin = me.rol === 'admin';
+  const marcaCell = p => `<span class="mnom" style="font-weight:600"><span class="dot" style="background:${cfg(p.marca_id).primario}"></span>${esc(marcaById(p.marca_id)?.nombre || '')}</span>`;
+  const nombreCell = (p, editable) => `<td class="nm">${esc(p.nombre)}${editable
+      ? `<input class="desc" value="${esc(p.descripcion || '')}" placeholder="+ descripción (cuándo usarla)" onclick="event.stopPropagation()" onchange="descTpl(${p.id}, this.value)">`
+      : (p.descripcion ? `<small>${esc(p.descripcion)}</small>` : '')}</td>`;
+  const usar = p => marcasEditables().length ? `<button class="bt" onclick="event.stopPropagation();abrirNuevo(${p.marca_id ?? 'null'}, ${p.id})">Usar</button>` : '';
+  let h = '';
+
+  if (pend.length){
+    h += `<div class="psec"><h2>Propuestas para aprobar</h2><span class="chip st-pendiente">${pend.length}</span><span class="small">Plantillas de marca que un editor propuso para todas las marcas</span></div>
+      <div class="tbl"><table><thead><tr><th>Plantilla</th><th>Marca</th><th>Bloques</th><th>Propuesta por</th><th></th></tr></thead><tbody>` +
+      pend.map(p => `<tr class="click pend-row" onclick="location.hash='plantilla/${p.id}'">${nombreCell(p, false)}<td>${marcaCell(p)}</td><td>${miniPrev(p)}</td>
+        <td class="muted" style="font-size:12px">${esc(p.propuesta_por || '')}<br>${fechaHora(p.propuesta_at)}</td>
+        <td onclick="event.stopPropagation()"><div class="acts"><button class="bt" onclick="location.hash='plantilla/${p.id}'">Ver</button><button class="btn-pri" onclick="aprobarTpl(${p.id})">Aprobar</button><button class="bt del" onclick="rechazarTpl(${p.id})">Rechazar</button></div></td></tr>`).join('') +
+      `</tbody></table></div>`;
+  }
+
+  h += `<div class="psec"><h2>Generales</h2><span class="small">Para todas las marcas${admin ? ' · solo el admin las crea y edita' : ''}</span></div>`;
+  h += generales.length ? `<div class="tbl"><table><thead><tr><th style="width:38%">Plantilla</th><th>Bloques</th><th>Última edición</th><th></th></tr></thead><tbody>` +
+    generales.map(p => `<tr class="click" onclick="location.hash='plantilla/${p.id}'">${nombreCell(p, admin)}<td>${miniPrev(p)}</td>
+      <td class="muted" style="font-size:12px">${fechaHora(p.actualizado_at || p.creado_at)}<br>${esc(p.actualizado_por || p.creado_por || '')}</td>
+      <td onclick="event.stopPropagation()"><div class="acts">${usar(p)}${admin ? `<button class="bt" onclick="location.hash='plantilla/${p.id}'">Editar</button><button class="bt del" title="Borrar" onclick="borrarTplLib(${p.id})">✕</button>` : `<button class="bt" onclick="location.hash='plantilla/${p.id}'">Ver</button>`}</div></td></tr>`).join('') +
+    `</tbody></table></div>` : `<div class="tbl"><div class="vacio">${q ? 'No hay plantillas generales con esa búsqueda.' : 'Todavía no hay plantillas generales.'}</div></div>`;
+
+  h += `<div class="psec"><h2>De cada marca</h2><span class="small">${admin ? 'Las que arman los equipos para sus marcas' : 'Tildá “Proponer para todas” y el admin la revisa para sumarla a las generales'}</span></div>`;
+  h += deMarca.length ? `<div class="tbl"><table><thead><tr><th style="width:30%">Plantilla</th><th>Marca</th><th>Bloques</th><th>Para todas las marcas</th><th></th></tr></thead><tbody>` +
+    deMarca.map(p => { const ed = puedeEditar(p.marca_id);
+      const prop = p.propuesta === 'aprobada' ? `<span class="chip st-aprobada">✓ ${PROP_LABEL.aprobada}</span>`
+        : admin ? `<button class="bt" onclick="event.stopPropagation();aprobarTpl(${p.id})" title="Crear una copia general">Hacer general</button>${p.propuesta === 'pendiente' ? ` <span class="chip st-pendiente">${PROP_LABEL.pendiente}</span>` : ''}`
+        : ed ? `<label class="prop" onclick="event.stopPropagation()"><input type="checkbox"${p.propuesta === 'pendiente' ? ' checked' : ''} onchange="proponerTpl(${p.id}, this.checked)"> Proponer para todas</label>${p.propuesta ? ` <span class="chip st-${p.propuesta}">${PROP_LABEL[p.propuesta]}</span>` : ''}`
+        : (p.propuesta ? `<span class="chip st-${p.propuesta}">${PROP_LABEL[p.propuesta]}</span>` : '<span class="muted">—</span>');
+      return `<tr class="click" onclick="location.hash='plantilla/${p.id}'">${nombreCell(p, ed)}<td>${marcaCell(p)}</td><td>${miniPrev(p)}</td><td>${prop}</td>
+        <td onclick="event.stopPropagation()"><div class="acts">${usar(p)}${ed ? `<button class="bt" onclick="location.hash='plantilla/${p.id}'">Editar</button><button class="bt del" title="Borrar" onclick="borrarTplLib(${p.id})">✕</button>` : ''}</div></td></tr>`; }).join('') +
+    `</tbody></table></div>` : `<div class="tbl"><div class="vacio">${q ? 'No hay plantillas de marca con esa búsqueda.' : 'Todavía no hay plantillas de marca. Se crean con “Nueva plantilla” o desde un brief: pestaña Plantillas → Guardar.'}</div></div>`;
+  $('pBody').innerHTML = h;
+  pintarPendientes();
+}
+function abrirNuevaTpl(){
+  const ops = (me.rol === 'admin' ? ['<option value="">General (todas las marcas)</option>'] : [])
+    .concat(marcasEditables().map(m => `<option value="${m.id}">Solo ${esc(m.nombre)}</option>`));
+  if (!ops.length) return toast('No tenés marcas para editar', true);
+  $('ntAlc').innerHTML = ops.join(''); $('ntNom').value = ''; $('ntDesc').value = '';
+  $('ovTpl').classList.add('on'); $('ntNom').focus();
+}
+async function crearTpl(){
+  const nombre = $('ntNom').value.trim(); if (!nombre) return toast('Ponele un nombre', true);
+  const marca_id = $('ntAlc').value ? +$('ntAlc').value : null;
+  const r = await sb.from('brf_plantillas').insert({nombre, marca_id, descripcion:$('ntDesc').value.trim() || null, blocks:[],
+    creado_por:nombreUsuario(), actualizado_por:nombreUsuario()}).select().single();
+  if (r.error) return toast(r.error.message, true);
+  D.plantillas.push(r.data); $('ovTpl').classList.remove('on'); location.hash = 'plantilla/' + r.data.id;
+}
+async function updTpl(id, campos, msg){
+  const r = await sb.from('brf_plantillas').update(campos).eq('id', id).select().single();
+  if (r.error){ toast(r.error.message, true); return null; }
+  Object.assign(D.plantillas.find(x => x.id === id), r.data);
+  if (msg) toast(msg);
+  return r.data;
+}
+async function descTpl(id, v){ await updTpl(id, {descripcion: v.trim() || null}, 'Descripción guardada'); }
+async function proponerTpl(id, on){
+  await updTpl(id, on ? {propuesta:'pendiente', propuesta_por:nombreUsuario(), propuesta_at:new Date().toISOString()} : {propuesta:null},
+    on ? 'Propuesta enviada: el admin la va a revisar' : 'Propuesta retirada');
+  pintarPlantillas();
+}
+async function aprobarTpl(id){
+  const p = D.plantillas.find(x => x.id === id);
+  if (!confirm(`¿Sumar “${p.nombre}” a las plantillas generales? Se crea una copia para todas las marcas (la de ${marcaById(p.marca_id)?.nombre || 'la marca'} queda igual).`)) return;
+  const r = await sb.from('brf_plantillas').insert({nombre:p.nombre, descripcion:p.descripcion, blocks:clone(p.blocks), marca_id:null, origen_id:p.id,
+    creado_por:p.propuesta_por || p.creado_por, actualizado_por:nombreUsuario()}).select().single();
+  if (r.error) return toast(r.error.message, true);
+  D.plantillas.push(r.data);
+  await updTpl(id, {propuesta:'aprobada', revisada_por:nombreUsuario()}, 'Aprobada: ya está entre las generales');
+  pintarPlantillas();
+}
+async function rechazarTpl(id){
+  if (!confirm('¿No aprobar esta propuesta? La plantilla sigue existiendo para su marca.')) return;
+  await updTpl(id, {propuesta:'rechazada', revisada_por:nombreUsuario()}, 'Propuesta rechazada');
+  pintarPlantillas();
+}
+async function borrarTplLib(id){
+  const p = D.plantillas.find(x => x.id === id);
+  if (!confirm(`¿Borrar la plantilla “${p.nombre}”? Los briefs que se hicieron con ella no se tocan.`)) return;
+  const r = await sb.from('brf_plantillas').delete().eq('id', id);
+  if (r.error) return toast(r.error.message, true);
+  D.plantillas = D.plantillas.filter(t => t.id !== id); pintarPlantillas(); toast('Plantilla borrada');
+}
+
 // ══ MARCAS ═══════════════════════════════════════════════════════════════════
 function renderMarcas(){
   const vis = marcasVisibles();
   $('mCount').textContent = vis.length + (vis.length === 1 ? ' marca' : ' marcas');
-  $('mGrid').innerHTML = vis.length ? `<table><thead><tr><th>Marca</th><th>Colores de la marca</th><th style="width:45%">Notas para el diseñador</th><th>Briefs</th><th></th></tr></thead><tbody>` +
+  $('mGrid').innerHTML = vis.length ? `<table><thead><tr><th>Marca</th><th>Logo</th><th>Colores de la marca</th><th style="width:36%">Notas para el diseñador</th><th>Briefs</th><th></th></tr></thead><tbody>` +
     vis.map(m => {
       const c = cfg(m.id), ed = puedeEditar(m.id), dis = ed ? '' : ' disabled';
       const n = D.briefs.filter(b => b.marca_id === m.id).length;
       return `<tr data-id="${m.id}">
         <td class="nm"><span class="mnom"><span class="dot" style="background:${c.primario}"></span>${esc(m.nombre)}</span></td>
+        <td>${logoCell(m.id, ed)}</td>
         <td><div class="mcol">${[['primario','Principal','botones, cintillos, cupones'],['secundario','Secundario','footer y fondos']].map(([k,lbl,uso]) =>
           `<label class="mc" title="${lbl}: ${uso}"><input type="color" data-k="${k}" value="${c[k]}"${dis}><span><small>${lbl}</small><input class="hex" data-hex="${k}" value="${c[k].toUpperCase()}" maxlength="7" spellcheck="false"${dis}></span></label>`).join('')}</div></td>
         <td><textarea class="inp mnotas" rows="1" data-k="notas" placeholder="${ed ? 'Tipografías, tono, logo, cosas a evitar…' : 'Sin notas'}"${dis}>${esc(c.notas || '')}</textarea></td>
@@ -756,12 +919,34 @@ function renderMarcas(){
     inp.value = cfg(+inp.closest('tr').dataset.id)[inp.dataset.hex].toUpperCase(); inp.classList.remove('bad');
   }));
 }
+// logo de la marca: se sube una vez y aparece en el bloque Logo de todos sus briefs
+function logoCell(id, ed){
+  const url = cfg(id).logo_url;
+  if (url) return `<div class="mlogo"><div class="lg"><img src="${esc(url)}" alt="Logo"></div>${ed ? `<button class="x" title="Quitar logo" onclick="quitarLogo(${id})">✕</button>` : ''}</div>`;
+  return ed ? `<div class="mlogo"><label class="up">⬆ Subir logo<input type="file" accept="image/*" onchange="subirLogo(${id}, this.files[0])"></label></div>` : '<span class="muted">—</span>';
+}
+async function subirLogo(id, file){
+  if (!file || !file.type.startsWith('image/')) return toast('Elegí una imagen (PNG con fondo transparente es lo ideal)', true);
+  toast('Subiendo logo…');
+  const blob = await achicar(file);
+  const ext = ({'image/png':'png','image/gif':'gif','image/webp':'webp','image/svg+xml':'svg'})[blob.type] || 'jpg';
+  const path = `${id}/logo/${uid()}${uid()}.${ext}`;
+  const r = await sb.storage.from(BUCKET).upload(path, blob, {contentType: blob.type, upsert:false});
+  if (r.error) return toast('No se pudo subir: ' + r.error.message, true);
+  D.config[id] = Object.assign({marca_id:id}, cfg(id), {logo_url: sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl});
+  guardarConfig(id); renderMarcas(); toast('Logo cargado: ya aparece en los briefs de la marca');
+}
+function quitarLogo(id){
+  if (!confirm('¿Quitar el logo de esta marca? Los briefs vuelven a mostrar el texto “LOGO”.')) return;
+  D.config[id] = Object.assign({marca_id:id}, cfg(id), {logo_url:''});
+  guardarConfig(id); renderMarcas();
+}
 const cfgT = {};
 function guardarConfig(id){
   clearTimeout(cfgT[id]);
   cfgT[id] = setTimeout(async () => {
     const c = cfg(id);
-    const r = await sb.from('brf_marca_config').upsert({marca_id:id, primario:c.primario, secundario:c.secundario, notas:c.notas || null, actualizado_at:new Date().toISOString()});
+    const r = await sb.from('brf_marca_config').upsert({marca_id:id, primario:c.primario, secundario:c.secundario, notas:c.notas || null, logo_url:c.logo_url || null, actualizado_at:new Date().toISOString()});
     if (r.error) toast(r.error.message, true);
   }, 500);
 }
@@ -822,17 +1007,35 @@ async function quitarMarca(u, m){
 
 // ══ EDITOR ═══════════════════════════════════════════════════════════════════
 async function abrirBrief(id){
-  if (cur && cur.id === id) return;
+  if (cur && cur.kind === 'brief' && cur.id === id) return;
   flushSave();
   const r = await sb.from('brf_briefs').select('*').eq('id', id).maybeSingle();
   if (r.error || !r.data){ toast(r.error ? r.error.message : 'Ese brief no existe o no tenés acceso', true); location.hash = ''; return; }
-  cur = r.data;
+  cur = Object.assign(r.data, {kind:'brief'});
   cur.doc = Object.assign(newDoc(), cur.doc || {}); cur.doc.meta = Object.assign(newDoc().meta, cur.doc.meta || {});
-  EDIT = puedeEditar(cur.marca_id);
+  prepararEditor(puedeEditar(cur.marca_id));
+}
+// una plantilla se edita en el mismo editor: el título es su nombre y no tiene asunto/estado
+function abrirPlantilla(id){
+  if (cur && cur.kind === 'tpl' && cur.id === id) return;
+  flushSave();
+  const p = D.plantillas.find(x => x.id === id);
+  if (!p){ toast('Esa plantilla no existe o no tenés acceso', true); location.hash = 'plantillas'; return; }
+  const doc = newDoc(); doc.meta.campana = p.nombre; doc.blocks = clone(p.blocks || []);
+  cur = {kind:'tpl', id:p.id, marca_id:p.marca_id, estado:'borrador', doc, actualizado_at:p.actualizado_at || p.creado_at};
+  prepararEditor(puedeTocarTpl(p));
+}
+function prepararEditor(puede){
+  const tpl = cur.kind === 'tpl';
+  EDIT = puede;
   mostrar('editor');
   $('vEditor').classList.toggle('edit', EDIT); $('vEditor').classList.toggle('ro', !EDIT);
-  $('side').hidden = !EDIT; $('roChip').hidden = EDIT; $('btnDup').hidden = !EDIT;
+  $('side').hidden = !EDIT; $('roChip').hidden = EDIT; $('btnDup').hidden = !EDIT || tpl;
   $('eMarca').disabled = $('eEstado').disabled = !EDIT;
+  $('eMarca').hidden = $('eEstado').hidden = $('steps').hidden = $('shGrid').hidden = tpl;
+  $('tabTplBtn').hidden = tpl;
+  $('eTitulo').textContent = tpl ? 'Editor de Plantilla' : 'Editor de Brief';
+  document.querySelector('[data-m="campana"]').dataset.ph = tpl ? 'Nombre de la plantilla' : 'Nombre de la campaña';
   document.querySelectorAll('[data-m]').forEach(el => el.contentEditable = EDIT ? 'plaintext-only' : 'false');
   marcarGuardado(cur.actualizado_at);
   setTab('contenido'); renderAll();
@@ -869,7 +1072,9 @@ const link = (b, f='link') => `<div class="lnk">🔗 ${ed(b, f, 'link de destino
 function blockHTML(b){
   const al = b.align ? 'al-' + b.align : '';
   switch(b.type){
-    case 'logo':   return `<div class="b-logo"><div style="text-align:center">${ed(b,'text','LOGO')}${ed(b,'nav','Menú / navegación (opcional)','navl')}</div></div>`;
+    case 'logo': { // si la marca tiene logo cargado se muestra ese; si no, el texto editable
+      const lg = cfg(cur.marca_id).logo_url;
+      return `<div class="b-logo"><div style="text-align:center">${lg ? `<img class="logo-img" src="${esc(lg)}" crossorigin="anonymous" alt="Logo">` : ed(b,'text','LOGO')}${ed(b,'nav','Menú / navegación (opcional)','navl opt')}</div></div>`; }
     case 'banner': return `<div class="b-banner">${ed(b,'text','Texto del cintillo (ej. envío gratis)')}</div>`;
     case 'hero':   return `<div class="b-hero">${imgBox(b,'img','Imagen principal: describí qué va')}
                      <div class="pad ${al}">${ed(b,'title','Título del hero','h1')}<div style="height:8px"></div>${ed(b,'text','Bajada / texto de apoyo','txt')}
@@ -911,7 +1116,7 @@ function renderHead(){
   $('campLbl').textContent = d.meta.campana || '';
   $('sheet').style.setProperty('--bp', c.primario);
   $('sheet').style.setProperty('--bs', c.secundario);
-  $('brandName').textContent = m?.nombre || '';
+  $('brandName').textContent = m?.nombre || (cur.kind === 'tpl' ? 'Plantilla general · todas las marcas' : '');
   $('brandNotes').style.display = c.notas ? '' : 'none';
   $('brandNotes').textContent = c.notas ? '📌 ' + c.notas : '';
   const ops = EDIT ? marcasEditables() : [m].filter(Boolean);
@@ -938,6 +1143,14 @@ function flushSave(){ if (saveT){ clearTimeout(saveT); guardarYa(); } }
 async function guardarYa(){
   saveT = null;
   const b = cur, d = b.doc;
+  if (b.kind === 'tpl'){
+    const r = await sb.from('brf_plantillas').update({nombre: d.meta.campana.trim() || 'Sin nombre', blocks: d.blocks,
+      actualizado_por:nombreUsuario(), actualizado_at:new Date().toISOString()}).eq('id', b.id).select().single();
+    if (r.error){ $('saved').className = 'saved err'; $('saved').lastChild.textContent = 'No se pudo guardar: ' + r.error.message; return; }
+    Object.assign(D.plantillas.find(x => x.id === b.id) || {}, r.data);
+    if (cur && cur.id === b.id) marcarGuardado(r.data.actualizado_at);
+    return;
+  }
   const fila = {marca_id:b.marca_id, estado:b.estado, nombre:d.meta.campana || '', fecha_envio:d.meta.fecha || null, doc:d,
                 actualizado_por:nombreUsuario(), actualizado_at:new Date().toISOString()};
   const r = await sb.from('brf_briefs').update(fila).eq('id', b.id).select(LIST_COLS).single();
@@ -1010,15 +1223,16 @@ async function achicar(file){
 }
 async function subirImg(file, blockId, f){
   if (!file.type.startsWith('image/')) return toast('Eso no es una imagen', true);
-  const briefId = cur.id, marca = cur.marca_id;
+  const doc = cur, briefId = cur.id;
   toast('Subiendo imagen…');
   const blob = await achicar(file);
   const ext = ({'image/png':'png','image/gif':'gif','image/webp':'webp'})[blob.type] || 'jpg';
-  const path = `${marca}/${briefId}/${uid()}${uid()}.${ext}`;
+  // briefs: <marca>/<brief>/…  ·  plantillas: <marca o general>/tpl-<id>/…
+  const path = `${doc.marca_id ?? 'general'}/${doc.kind === 'tpl' ? 'tpl-' + briefId : briefId}/${uid()}${uid()}.${ext}`;
   const r = await sb.storage.from(BUCKET).upload(path, blob, {contentType: blob.type, upsert:false});
   if (r.error) return toast('No se pudo subir: ' + r.error.message, true);
   const url = sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
-  if (!cur || cur.id !== briefId) return;
+  if (cur !== doc) return;
   const b = cur.doc.blocks.find(x => x.id === blockId); if (!b) return;
   setP(b.d, f + 'Url', url); save(); renderEmail(); toast('Imagen subida');
 }
@@ -1111,13 +1325,13 @@ async function copiarLink(){
 const puedeTocarTpl = p => p.marca_id === null ? me.rol === 'admin' : puedeEditar(p.marca_id);
 function renderTpls(){
   const m = cur.marca_id;
-  $('tplGeneral').disabled = me.rol !== 'admin';
-  $('tplGeneral').parentElement.hidden = me.rol !== 'admin';
+  // admin: guarda directo como general · editor: la guarda para su marca y puede proponerla
+  $('tplGeneralLbl').textContent = me.rol === 'admin' ? 'General (para todas las marcas)' : 'Proponer para todas las marcas (lo revisa el admin)';
   const ps = D.plantillas.filter(p => p.marca_id === null || p.marca_id === m)
     .sort((a,b) => (b.marca_id === m) - (a.marca_id === m) || a.nombre.localeCompare(b.nombre));
   $('tplList').innerHTML = ps.length ? ps.map(p => `<div class="tpl">
       <span class="dot" style="background:${p.marca_id ? cfg(p.marca_id).primario : '#c5c9d1'}"></span>
-      <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div><div class="small">${p.marca_id ? esc(marcaById(p.marca_id)?.nombre || '') : 'General'} · ${p.blocks.length} bloques</div></div>
+      <div style="flex:1;min-width:0"><div class="nm">${esc(p.nombre)}</div><div class="small">${p.marca_id ? esc(marcaById(p.marca_id)?.nombre || '') : 'General'} · ${p.blocks.length} bloques${p.propuesta && p.marca_id ? ' · ' + PROP_LABEL[p.propuesta] : ''}</div></div>
       <button class="bt" onclick="useTpl(${p.id})">Usar</button>
       ${puedeTocarTpl(p) ? `<button class="bt" onclick="overwriteTpl(${p.id})" title="Reemplazar por el brief actual">↻</button><button class="bt del" onclick="delTpl(${p.id})" title="Borrar">✕</button>` : ''}</div>`).join('')
     : '<p class="small">No hay plantillas para esta marca.</p>';
@@ -1126,10 +1340,13 @@ async function saveTpl(){
   const nombre = $('tplName').value.trim();
   if (!nombre) return toast('Ponele un nombre', true);
   if (!cur.doc.blocks.length) return toast('El brief está vacío', true);
-  const general = me.rol === 'admin' && $('tplGeneral').checked;
-  const r = await sb.from('brf_plantillas').insert({nombre, marca_id: general ? null : cur.marca_id, blocks: clone(cur.doc.blocks), creado_por:nombreUsuario()}).select().single();
+  const tilde = $('tplGeneral').checked, admin = me.rol === 'admin';
+  const fila = {nombre, marca_id: admin && tilde ? null : cur.marca_id, blocks: clone(cur.doc.blocks), creado_por:nombreUsuario(), actualizado_por:nombreUsuario()};
+  if (!admin && tilde) Object.assign(fila, {propuesta:'pendiente', propuesta_por:nombreUsuario(), propuesta_at:new Date().toISOString()});
+  const r = await sb.from('brf_plantillas').insert(fila).select().single();
   if (r.error) return toast(r.error.message, true);
-  D.plantillas.push(r.data); $('tplName').value = ''; renderTpls(); toast('Plantilla guardada');
+  D.plantillas.push(r.data); $('tplName').value = ''; $('tplGeneral').checked = false; renderTpls();
+  toast(!admin && tilde ? 'Plantilla guardada y propuesta para todas las marcas' : 'Plantilla guardada');
 }
 function useTpl(id){
   const t = D.plantillas.find(x => x.id === id);
