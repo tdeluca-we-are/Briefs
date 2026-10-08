@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Armador de Briefs</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --bg:#f3f3f1; --panel:#fff; --line:#e3e2de; --ink:#1f1f1d; --mut:#77756f; --acc:#3d5afe;
+    --bp:#3d5afe; --bs:#f1f1ee;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);height:100vh;display:flex;flex-direction:column}
+  button,select,input,textarea{font:inherit}
+  button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;color:var(--ink)}
+  button:hover{border-color:#bbb}
+  button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+  button.pri:hover{filter:brightness(1.08)}
+  button.ghost{border-color:transparent;background:transparent}
+  button.danger{color:#c62828}
+
+  /* top bar */
+  .top{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .top h1{font-size:15px;margin:0 12px 0 0;font-weight:650;letter-spacing:-.01em}
+  .top .sp{flex:1}
+  .top select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:160px}
+
+  .main{flex:1;display:flex;min-height:0}
+  /* palette */
+  .pal{width:210px;background:var(--panel);border-right:1px solid var(--line);padding:14px 12px;overflow:auto}
+  .pal h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:4px 4px 8px;font-weight:600}
+  .pi{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:grab;background:#fff;user-select:none}
+  .pi:hover{border-color:var(--acc);background:#f6f7ff}
+  .pi i{font-style:normal;width:20px;text-align:center;color:var(--mut)}
+  .pal .hint{font-size:12px;color:var(--mut);margin:12px 4px 0}
+
+  /* stage */
+  .stage{flex:1;overflow:auto;padding:28px 20px 80px}
+  #sheet{width:680px;margin:0 auto;background:#fff;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:28px 40px 40px}
+  .sh-head{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px}
+  .sh-brand{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+  .sh-brand b{width:12px;height:12px;border-radius:50%;background:var(--bp);display:inline-block}
+  .sh-title{font-size:24px;font-weight:700;margin:6px 0 12px;letter-spacing:-.02em}
+  .sh-grid{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:13px}
+  .sh-grid label{color:var(--mut);font-weight:600;font-size:12px;padding-top:1px}
+  .sh-notes{margin-top:12px;font-size:12px;background:#fafaf8;border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:#555;white-space:pre-wrap}
+
+  .email{width:600px;margin:0 auto;border:1px solid var(--line);min-height:200px;position:relative;background:#fff}
+  .empty{padding:60px 30px;text-align:center;color:var(--mut);border:2px dashed var(--line);margin:16px;border-radius:8px}
+
+  /* editable */
+  .ed{outline:none;white-space:pre-wrap;word-break:break-word;min-height:1.3em;border-radius:3px}
+  .ed:hover{box-shadow:0 0 0 1px #c9cff7}
+  .ed:focus{box-shadow:0 0 0 2px var(--acc)}
+  .ed:empty::before{content:attr(data-ph);color:#b3b1ab}
+  .ph{color:#b3b1ab !important}
+  .btn .ph,.b-banner .ph{color:rgba(255,255,255,.7) !important}
+
+  /* blocks */
+  .blk{position:relative}
+  .blk:hover{box-shadow:inset 0 0 0 1px #c9cff7}
+  .blk .tag{position:absolute;left:4px;top:4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:var(--acc);color:#fff;padding:1px 6px;border-radius:4px;opacity:0;pointer-events:none;z-index:2}
+  .blk .tb{position:absolute;right:4px;top:4px;display:flex;gap:2px;opacity:0;z-index:3;background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  .blk:hover .tag,.blk:hover .tb{opacity:1}
+  .tb button{border:0;padding:2px 6px;font-size:12px;border-radius:4px;background:transparent;line-height:1.4}
+  .tb button:hover{background:#eef}
+  .tb .h{cursor:grab}
+  .blk.dragging{opacity:.35}
+  .dropline{height:4px;background:var(--acc);border-radius:2px;margin:-2px 0;position:relative;z-index:5}
+
+  .pad{padding:22px 36px}
+  .al-left{text-align:left}.al-center{text-align:center}
+  .img{background:#ecebe7;border:1px dashed #c8c6bf;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;text-align:center;color:#6c6a64;font-size:13px}
+  .img::before{content:"IMAGEN";font-size:10px;letter-spacing:.1em;font-weight:700;color:#9a978f;margin-bottom:4px}
+  .img .ed{width:100%}
+  .b-logo{display:flex;align-items:center;justify-content:center;padding:18px 24px;border-bottom:1px solid var(--line)}
+  .b-logo .ed{font-weight:800;font-size:20px;color:var(--bp);letter-spacing:.04em}
+  .b-logo .nav{font-size:12px;color:var(--mut);margin-top:4px}
+  .b-banner{background:var(--bp);color:#fff;padding:10px 20px;text-align:center;font-weight:600;font-size:13px}
+  .b-banner .ed:empty::before{color:rgba(255,255,255,.65)}
+  .b-hero .img{height:260px}
+  .h1{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+  .h2{font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .txt{font-size:15px;color:#3a3a37;line-height:1.55}
+  .btnw{margin-top:14px}
+  .btn{display:table;margin:0 auto;background:var(--bp);color:#fff;font-weight:700;padding:12px 26px;border-radius:6px;min-width:140px;text-align:center}
+  .btn .ed:empty::before{color:rgba(255,255,255,.7)}
+  .al-left .btn{margin:0}
+  .col .btn{margin:8px 0 0}
+  .lnk{font-size:11px;color:#8a8882;margin-top:5px;font-family:ui-monospace,Consolas,monospace}
+  .lnk .ed{display:inline-block;min-width:60px}
+  .b-imagen .img{height:200px}
+  .cols{display:grid;gap:14px;padding:20px 24px}
+  .cols.c2{grid-template-columns:1fr 1fr}.cols.c3{grid-template-columns:1fr 1fr 1fr}
+  .col .img{height:130px}
+  .col .ct{font-weight:700;margin-top:8px;font-size:14px}
+  .col .cx{font-size:13px;color:#555;margin-top:3px}
+  .col .btn{min-width:0;padding:8px 14px;font-size:12px;margin-top:8px}
+  .b-cupon .box{border:2px dashed var(--bp);border-radius:8px;padding:18px;text-align:center}
+  .b-cupon .cbig{font-size:28px;font-weight:800;color:var(--bp)}
+  .b-cupon .code{display:inline-block;margin-top:8px;background:var(--bs);padding:6px 16px;border-radius:4px;font-family:ui-monospace,Consolas,monospace;font-weight:700;letter-spacing:.08em}
+  .b-sep{padding:10px 36px}.b-sep hr{border:0;border-top:1px solid #dcdad5;margin:0}
+  .b-esp{height:36px}
+  .b-nota{margin:10px 16px;background:#fff7c2;border:1px solid #efd96a;border-radius:6px;padding:10px 12px;font-size:13px;color:#5b4d00}
+  .b-nota .nl{font-size:10px;font-weight:700;letter-spacing:.08em;margin-bottom:3px}
+  .b-footer{background:var(--bs);padding:22px 30px;font-size:12px;color:#6c6a64;text-align:center}
+  .b-footer .redes{font-weight:600;margin-bottom:6px;color:#555}
+
+  /* export mode */
+  .exporting .tb,.exporting .tag{display:none !important}
+  .exporting .blk:hover,.exporting .ed:hover{box-shadow:none}
+
+  /* modal */
+  .ov{position:fixed;inset:0;background:rgba(20,20,18,.4);display:none;align-items:flex-start;justify-content:center;padding-top:70px;z-index:50}
+  .ov.on{display:flex}
+  .modal{background:#fff;border-radius:12px;width:620px;max-width:calc(100% - 32px);max-height:calc(100vh - 110px);overflow:auto;padding:20px 22px;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+  .modal h2{margin:0 0 14px;font-size:17px;display:flex;align-items:center}
+  .modal h2 .x{margin-left:auto}
+  .row{display:flex;gap:8px;align-items:center}
+  .card{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+  .card input[type=text],.card textarea,.modal input[type=text]{border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%}
+  .card textarea{resize:vertical;min-height:54px;margin-top:8px}
+  .card input[type=color]{width:38px;height:34px;border:1px solid var(--line);border-radius:7px;padding:2px;background:#fff;cursor:pointer}
+  .small{font-size:12px;color:var(--mut)}
+  .tpl{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  .tpl .nm{font-weight:600}
+  .tpl .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .sec{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:600;margin:16px 0 8px}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:9px 16px;border-radius:8px;opacity:0;transition:.2s;pointer-events:none;z-index:60}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>✉️ Armador de Briefs</h1>
+  <select id="brandSel" title="Marca"></select>
+  <button onclick="openBrands()">Marcas</button>
+  <button onclick="openTemplates()">Plantillas</button>
+  <button onclick="nuevo()">Nuevo brief</button>
+  <div class="sp"></div>
+  <button onclick="copiarImg()">Copiar imagen</button>
+  <button class="pri" onclick="exportPng()">Descargar PNG</button>
+</div>
+
+<div class="main">
+  <aside class="pal" id="pal">
+    <h3>Bloques</h3>
+    <div id="palList"></div>
+    <p class="hint">Arrastrá un bloque al email o hacé click para sumarlo al final. Click sobre cualquier texto para editarlo.</p>
+  </aside>
+  <div class="stage">
+    <div id="sheet">
+      <div class="sh-head">
+        <div class="sh-brand"><b></b><span id="brandName">Sin marca</span></div>
+        <div class="sh-title ed" contenteditable="plaintext-only" data-m="campana" data-ph="Nombre de la campaña"></div>
+        <div class="sh-grid">
+          <label>Asunto</label><div class="ed" contenteditable="plaintext-only" data-m="asunto" data-ph="Asunto del email"></div>
+          <label>Preheader</label><div class="ed" contenteditable="plaintext-only" data-m="preheader" data-ph="Texto de preheader"></div>
+          <label>Fecha de envío</label><div class="ed" contenteditable="plaintext-only" data-m="fecha" data-ph="dd/mm"></div>
+          <label>Objetivo / notas</label><div class="ed" contenteditable="plaintext-only" data-m="objetivo" data-ph="Qué buscamos con este email, públicos, observaciones…"></div>
+        </div>
+        <div class="sh-notes" id="brandNotes" style="display:none"></div>
+      </div>
+      <div class="email" id="email"></div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'briefs_v1';
+const uid = () => Math.random().toString(36).slice(2, 9);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const item = () => ({img:'', title:'', text:'', cta:''});
+
+// ---------- tipos de bloque ----------
+const TYPES = {
+  logo:    {label:'Logo / header', icon:'◎', d:()=>({text:'', nav:''})},
+  banner:  {label:'Banner / cintillo', icon:'▬', d:()=>({text:''})},
+  hero:    {label:'Hero', icon:'▣', d:()=>({img:'', title:'', text:'', cta:'', link:''})},
+  titulo:  {label:'Título', icon:'H', d:()=>({text:''})},
+  texto:   {label:'Texto', icon:'¶', d:()=>({text:''})},
+  boton:   {label:'Botón (CTA)', icon:'⬭', d:()=>({text:'', link:''})},
+  imagen:  {label:'Imagen', icon:'🖼', d:()=>({img:''})},
+  col2:    {label:'2 columnas', icon:'◫', d:()=>({items:[item(), item()]})},
+  col3:    {label:'3 columnas / productos', icon:'▥', d:()=>({items:[item(), item(), item()]})},
+  cupon:   {label:'Cupón / código', icon:'%', d:()=>({title:'', code:'', text:''})},
+  sep:     {label:'Separador', icon:'—', d:()=>({})},
+  esp:     {label:'Espacio', icon:'↕', d:()=>({})},
+  nota:    {label:'Nota al diseñador', icon:'✎', d:()=>({text:''})},
+  footer:  {label:'Footer', icon:'▁', d:()=>({redes:'', text:''})},
+};
+const ALIGNABLE = ['titulo','texto','boton','hero','cupon'];
+const mk = (type, d={}, align) => ({id:uid(), type, align: align || (ALIGNABLE.includes(type) ? 'center' : undefined), d:Object.assign(TYPES[type].d(), d)});
+
+// ---------- estado ----------
+function seedTemplates(){
+  return [
+    {id:uid(), name:'Promo clásica', brandId:'', blocks:[mk('logo'), mk('banner',{text:'Envío gratis en compras superiores a $X'}), mk('hero',{img:'Foto de campaña + precio destacado'}), mk('titulo'), mk('texto'), mk('boton',{text:'Comprar ahora'}), mk('col3'), mk('footer')]},
+    {id:uid(), name:'Lanzamiento', brandId:'', blocks:[mk('logo'), mk('hero',{img:'Producto nuevo protagonista'}), mk('texto'), mk('boton',{text:'Descubrilo'}), mk('imagen'), mk('col2'), mk('footer')]},
+    {id:uid(), name:'Cupón', brandId:'', blocks:[mk('logo'), mk('hero'), mk('cupon',{title:'15% OFF', code:'CODIGO15', text:'Válido hasta el dd/mm'}), mk('boton',{text:'Usar mi cupón'}), mk('col3'), mk('footer')]},
+  ];
+}
+function newDoc(brandId=''){ return {brandId, meta:{campana:'', asunto:'', preheader:'', fecha:'', objetivo:''}, blocks:[]}; }
+
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
+if (!S) S = {brands:[], templates:seedTemplates(), current:newDoc()};
+let saveT;
+function save(){ clearTimeout(saveT); saveT = setTimeout(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ toast('No se pudo guardar'); } }, 200); }
+
+const cur = () => S.current;
+const brand = id => S.brands.find(b => b.id === id);
+
+// ---------- paleta ----------
+document.getElementById('palList').innerHTML = Object.entries(TYPES).map(([k,t]) =>
+  `<div class="pi" draggable="true" data-type="${k}"><i>${t.icon}</i>${t.label}</div>`).join('');
+document.querySelectorAll('.pi').forEach(el => {
+  el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', 'new:' + el.dataset.type); e.dataTransfer.effectAllowed = 'copyMove'; });
+  el.addEventListener('click', () => { cur().blocks.push(mk(el.dataset.type)); save(); renderEmail(); document.querySelector('.stage').scrollTo({top:1e6, behavior:'smooth'}); });
+});
+
+// ---------- render ----------
+const getP = (o, p) => p.split('.').reduce((a,k) => a?.[k], o);
+const setP = (o, p, v) => { const ks = p.split('.'); const last = ks.pop(); ks.reduce((a,k) => a[k], o)[last] = v; };
+const ed = (b, f, ph, cls='') => `<div class="ed ${cls}" contenteditable="plaintext-only" data-f="${f}" data-ph="${esc(ph)}">${esc(getP(b.d, f))}</div>`;
+const imgBox = (b, f, ph='Describí la imagen') => `<div class="img">${ed(b, f, ph)}</div>`;
+const link = (b, f='link') => `<div class="lnk">🔗 ${ed(b, f, 'link de destino')}</div>`;
+
+function blockHTML(b){
+  const al = b.align ? 'al-' + b.align : '';
+  switch(b.type){
+    case 'logo':   return `<div class="b-logo"><div style="text-align:center">${ed(b,'text','LOGO')}${ed(b,'nav','Menú / navegación (opcional)','nav')}</div></div>`;
+    case 'banner': return `<div class="b-banner">${ed(b,'text','Texto del cintillo (ej. envío gratis)')}</div>`;
+    case 'hero':   return `<div class="b-hero">${imgBox(b,'img','Imagen principal: describí qué va')}
+                     <div class="pad ${al}">${ed(b,'title','Título del hero','h1')}<div style="height:8px"></div>${ed(b,'text','Bajada / texto de apoyo','txt')}
+                     <div class="btnw"><div class="btn">${ed(b,'cta','Texto del botón')}</div>${link(b)}</div></div></div>`;
+    case 'titulo': return `<div class="pad ${al}" style="padding-bottom:6px">${ed(b,'text','Título','h2')}</div>`;
+    case 'texto':  return `<div class="pad ${al}" style="padding-top:10px;padding-bottom:10px">${ed(b,'text','Escribí el texto del cuerpo…','txt')}</div>`;
+    case 'boton':  return `<div class="pad ${al}" style="padding-top:10px;padding-bottom:16px"><div class="btn">${ed(b,'text','Texto del botón')}</div>${link(b)}</div>`;
+    case 'imagen': return `<div class="b-imagen" style="padding:10px 0">${imgBox(b,'img')}</div>`;
+    case 'col2': case 'col3':
+      return `<div class="cols ${b.type==='col2'?'c2':'c3'}">` + b.d.items.map((_,i) =>
+        `<div class="col">${imgBox(b,`items.${i}.img`,'Imagen / producto')}${ed(b,`items.${i}.title`,'Título','ct')}${ed(b,`items.${i}.text`,'Texto / precio','cx')}<div class="btn">${ed(b,`items.${i}.cta`,'CTA')}</div></div>`).join('') + `</div>`;
+    case 'cupon':  return `<div class="pad b-cupon ${al}"><div class="box">${ed(b,'title','XX% OFF','cbig')}<div class="code">${ed(b,'code','CODIGO')}</div><div style="height:8px"></div>${ed(b,'text','Condiciones / vigencia','txt')}</div></div>`;
+    case 'sep':    return `<div class="b-sep"><hr></div>`;
+    case 'esp':    return `<div class="b-esp"></div>`;
+    case 'nota':   return `<div class="b-nota"><div class="nl">NOTA PARA DISEÑO</div>${ed(b,'text','Indicaciones para el diseñador…')}</div>`;
+    case 'footer': return `<div class="b-footer">${ed(b,'redes','Redes sociales / links','redes')}${ed(b,'text','Datos legales, dirección, desuscripción…')}</div>`;
+  }
+  return '';
+}
+
+function renderEmail(){
+  const el = document.getElementById('email');
+  const bl = cur().blocks;
+  if (!bl.length){ el.innerHTML = `<div class="empty">Arrastrá bloques acá<br><span class="small">o elegí una plantilla desde “Plantillas”</span></div>`; return; }
+  el.innerHTML = bl.map(b => `<div class="blk" data-id="${b.id}">
+    <span class="tag">${TYPES[b.type].label}</span>
+    <div class="tb">
+      <button class="h" draggable="true" title="Arrastrar">⠿</button>
+      ${b.align ? `<button data-a="align" title="Alinear">${b.align==='center'?'≡':'☰'}</button>` : ''}
+      ${b.type==='col2'||b.type==='col3' ? `<button data-a="addcol" title="Sumar columna">＋</button><button data-a="rmcol" title="Quitar columna">－</button>` : ''}
+      <button data-a="up" title="Subir">↑</button><button data-a="down" title="Bajar">↓</button>
+      <button data-a="dup" title="Duplicar">⧉</button><button data-a="del" title="Borrar">✕</button>
+    </div>${blockHTML(b)}</div>`).join('');
+}
+
+function renderHead(){
+  const c = cur(), br = brand(c.brandId);
+  document.querySelectorAll('[data-m]').forEach(el => { el.textContent = c.meta[el.dataset.m] || ''; });
+  const sheet = document.getElementById('sheet');
+  sheet.style.setProperty('--bp', br?.primary || '#3d5afe');
+  sheet.style.setProperty('--bs', br?.secondary || '#f1f1ee');
+  document.getElementById('brandName').textContent = br?.name || 'Sin marca';
+  const n = document.getElementById('brandNotes');
+  n.style.display = br?.notes ? '' : 'none';
+  n.textContent = br?.notes ? '📌 ' + br.notes : '';
+  const sel = document.getElementById('brandSel');
+  sel.innerHTML = `<option value="">— Sin marca —</option>` + S.brands.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  sel.value = c.brandId || '';
+}
+function renderAll(){ renderHead(); renderEmail(); }
+
+document.getElementById('brandSel').onchange = e => { cur().brandId = e.target.value; save(); renderHead(); };
+
+// ---------- edición ----------
+document.getElementById('sheet').addEventListener('input', e => {
+  const t = e.target.closest('.ed'); if (!t) return;
+  const v = t.innerText.replace(/\n$/, '');
+  if (t.dataset.m){ cur().meta[t.dataset.m] = v; }
+  else {
+    const b = cur().blocks.find(x => x.id === t.closest('.blk').dataset.id);
+    setP(b.d, t.dataset.f, v);
+  }
+  if (!t.textContent) t.innerHTML = '';   // vuelve a mostrar el placeholder
+  save();
+});
+
+document.getElementById('email').addEventListener('click', e => {
+  const btn = e.target.closest('.tb button[data-a]'); if (!btn) return;
+  const bl = cur().blocks, i = bl.findIndex(x => x.id === btn.closest('.blk').dataset.id), b = bl[i];
+  switch(btn.dataset.a){
+    case 'up':    if (i > 0) [bl[i-1], bl[i]] = [bl[i], bl[i-1]]; break;
+    case 'down':  if (i < bl.length-1) [bl[i+1], bl[i]] = [bl[i], bl[i+1]]; break;
+    case 'dup':   bl.splice(i+1, 0, Object.assign(clone(b), {id:uid()})); break;
+    case 'del':   bl.splice(i, 1); break;
+    case 'align': b.align = b.align === 'center' ? 'left' : 'center'; break;
+    case 'addcol': if (b.d.items.length < 4){ b.d.items.push(item()); b.type = 'col' + Math.min(b.d.items.length,3); } break;
+    case 'rmcol':  if (b.d.items.length > 2){ b.d.items.pop(); b.type = 'col' + b.d.items.length; } break;
+  }
+  save(); renderEmail();
+});
+
+// ---------- drag & drop ----------
+const email = document.getElementById('email');
+let dropLine = Object.assign(document.createElement('div'), {className:'dropline'});
+let dragId = null;
+
+email.addEventListener('dragstart', e => {
+  const h = e.target.closest?.('.h'); if (!h) return;
+  const blk = h.closest('.blk'); dragId = blk.dataset.id;
+  e.dataTransfer.setData('text/plain', 'move:' + dragId);
+  e.dataTransfer.setDragImage(blk, 20, 20);
+  setTimeout(() => blk.classList.add('dragging'));
+});
+email.addEventListener('dragend', () => { dragId = null; dropLine.remove(); email.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging')); });
+
+function dropIndex(y){
+  const blks = [...email.querySelectorAll('.blk')];
+  for (let i = 0; i < blks.length; i++){ const r = blks[i].getBoundingClientRect(); if (y < r.top + r.height/2) return i; }
+  return blks.length;
+}
+email.addEventListener('dragover', e => {
+  e.preventDefault();
+  const blks = [...email.querySelectorAll('.blk')], i = dropIndex(e.clientY);
+  if (!blks.length) return;
+  if (i < blks.length) email.insertBefore(dropLine, blks[i]); else email.appendChild(dropLine);
+});
+email.addEventListener('dragleave', e => { if (!email.contains(e.relatedTarget)) dropLine.remove(); });
+email.addEventListener('drop', e => {
+  e.preventDefault();
+  const data = e.dataTransfer.getData('text/plain'); dropLine.remove();
+  const bl = cur().blocks; let i = dropIndex(e.clientY);
+  if (data.startsWith('new:')){ const t = data.slice(4); if (TYPES[t]) bl.splice(i, 0, mk(t)); }
+  else if (data.startsWith('move:')){
+    const from = bl.findIndex(x => x.id === data.slice(5)); if (from < 0) return;
+    const [b] = bl.splice(from, 1); if (from < i) i--; bl.splice(i, 0, b);
+  } else return;
+  save(); renderEmail();
+});
+
+// ---------- exportar ----------
+async function capture(){
+  if (!window.html2canvas){ toast('No cargó el exportador (¿sin internet?)'); return null; }
+  document.activeElement?.blur();
+  document.body.classList.add('exporting');
+  // html2canvas no dibuja los placeholders: los volcamos como texto gris
+  document.querySelectorAll('#sheet .ed:empty').forEach(el => { el.textContent = el.dataset.ph; el.classList.add('ph'); });
+  try { return await html2canvas(document.getElementById('sheet'), {scale:2, backgroundColor:'#ffffff', useCORS:true}); }
+  finally { document.body.classList.remove('exporting'); renderAll(); }
+}
+const fileName = () => {
+  const c = cur(), parts = ['brief', brand(c.brandId)?.name, c.meta.campana].filter(Boolean).join('-');
+  return parts.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'') + '.png';
+};
+async function exportPng(){
+  const cv = await capture(); if (!cv) return;
+  const a = document.createElement('a'); a.download = fileName(); a.href = cv.toDataURL('image/png'); a.click();
+  toast('PNG descargado');
+}
+async function copiarImg(){
+  const cv = await capture(); if (!cv) return;
+  cv.toBlob(async blob => {
+    try { await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]); toast('Imagen copiada — pegala con Ctrl+V'); }
+    catch(e){ toast('El navegador no dejó copiar; usá Descargar PNG'); }
+  });
+}
+
+// ---------- nuevo ----------
+function nuevo(){
+  if (cur().blocks.length && !confirm('¿Empezar un brief nuevo? Se borra el actual (las plantillas quedan).')) return;
+  S.current = newDoc(cur().brandId); save(); renderAll();
+}
+
+// ---------- modales ----------
+const M = document.getElementById('modal');
+function openModal(html){ M.innerHTML = html; document.getElementById('ov').classList.add('on'); }
+function closeModal(){ document.getElementById('ov').classList.remove('on'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Marcas
+function openBrands(){
+  openModal(`<h2>Marcas <button class="ghost x" onclick="closeModal()">✕</button></h2>
+    <div id="brList"></div>
+    <button class="pri" onclick="addBrand()">+ Nueva marca</button>
+    <p class="small" style="margin-top:12px">El color principal se usa en botones, cintillos y cupones; el secundario en el footer y fondos. Las notas aparecen arriba del brief (tipografía, tono, cosas a evitar…).</p>`);
+  renderBrands();
+}
+function renderBrands(){
+  document.getElementById('brList').innerHTML = S.brands.length ? S.brands.map(b => `
+    <div class="card" data-id="${b.id}">
+      <div class="row">
+        <input type="text" value="${esc(b.name)}" data-k="name" placeholder="Nombre de la marca">
+        <input type="color" value="${b.primary}" data-k="primary" title="Color principal">
+        <input type="color" value="${b.secondary}" data-k="secondary" title="Color secundario">
+        <button class="danger" onclick="delBrand('${b.id}')">Borrar</button>
+      </div>
+      <textarea data-k="notes" placeholder="Notas para el diseñador: tipografías, tono, logo, cosas a evitar…">${esc(b.notes)}</textarea>
+    </div>`).join('') : `<p class="small">Todavía no cargaste marcas.</p>`;
+  document.querySelectorAll('#brList [data-k]').forEach(inp => inp.addEventListener('input', () => {
+    const b = brand(inp.closest('.card').dataset.id); b[inp.dataset.k] = inp.value; save(); renderHead();
+  }));
+}
+function addBrand(){
+  const b = {id:uid(), name:'Nueva marca', primary:'#3d5afe', secondary:'#f1f1ee', notes:''};
+  S.brands.push(b); if (!cur().brandId) cur().brandId = b.id;
+  save(); renderBrands(); renderHead();
+  document.querySelector(`#brList [data-id="${b.id}"] input`).select();
+}
+function delBrand(id){
+  if (!confirm('¿Borrar esta marca?')) return;
+  S.brands = S.brands.filter(b => b.id !== id);
+  if (cur().brandId === id) cur().brandId = '';
+  S.templates.forEach(t => { if (t.brandId === id) t.brandId = ''; });
+  save(); renderBrands(); renderHead();
+}
+
+// Plantillas
+function openTemplates(){
+  openModal(`<h2>Plantillas <button class="ghost x" onclick="closeModal()">✕</button></h2>
+    <div class="card">
+      <div class="small" style="margin-bottom:6px">Guardar la estructura actual (bloques + textos) como plantilla</div>
+      <div class="row"><input type="text" id="tplName" placeholder="Nombre de la plantilla">
+        <label class="small" style="white-space:nowrap"><input type="checkbox" id="tplBrand" ${cur().brandId?'checked':''} ${cur().brandId?'':'disabled'}> de ${esc(brand(cur().brandId)?.name || 'la marca')}</label>
+        <button class="pri" onclick="saveTpl()">Guardar</button></div>
+    </div>
+    <div id="tplList"></div>
+    <div class="sec">Respaldo</div>
+    <div class="row"><button onclick="backup()">Descargar respaldo (.json)</button><button onclick="document.getElementById('imp').click()">Importar respaldo</button>
+    <input type="file" id="imp" accept=".json" style="display:none" onchange="restore(this.files[0])"></div>`);
+  renderTpls();
+}
+function renderTpls(){
+  const bId = cur().brandId;
+  const sorted = [...S.templates].sort((a,b) => (b.brandId===bId) - (a.brandId===bId));
+  const row = t => { const br = brand(t.brandId); return `<div class="tpl">
+      <span class="dot" style="background:${br?.primary || '#ccc'}"></span>
+      <div style="flex:1"><div class="nm">${esc(t.name)}</div><div class="small">${br ? esc(br.name) : 'General'} · ${t.blocks.length} bloques</div></div>
+      <button onclick="useTpl('${t.id}')">Usar</button><button onclick="overwriteTpl('${t.id}')" title="Reemplazar por el brief actual">Actualizar</button><button class="danger ghost" onclick="delTpl('${t.id}')">✕</button></div>`; };
+  document.getElementById('tplList').innerHTML = sorted.length ? sorted.map(row).join('') : '<p class="small">No hay plantillas.</p>';
+}
+function saveTpl(){
+  const name = document.getElementById('tplName').value.trim();
+  if (!name) return toast('Ponele un nombre');
+  if (!cur().blocks.length) return toast('El brief está vacío');
+  S.templates.push({id:uid(), name, brandId: document.getElementById('tplBrand').checked ? cur().brandId : '', blocks:clone(cur().blocks)});
+  save(); renderTpls(); document.getElementById('tplName').value = ''; toast('Plantilla guardada');
+}
+function useTpl(id){
+  const t = S.templates.find(x => x.id === id);
+  if (cur().blocks.length && !confirm('Esto reemplaza los bloques del brief actual. ¿Seguimos?')) return;
+  cur().blocks = clone(t.blocks).map(b => (b.id = uid(), b));
+  if (t.brandId) cur().brandId = t.brandId;
+  save(); renderAll(); closeModal();
+}
+function overwriteTpl(id){
+  const t = S.templates.find(x => x.id === id);
+  if (!confirm(`¿Reemplazar “${t.name}” con el brief actual?`)) return;
+  t.blocks = clone(cur().blocks); save(); renderTpls(); toast('Plantilla actualizada');
+}
+function delTpl(id){
+  if (!confirm('¿Borrar esta plantilla?')) return;
+  S.templates = S.templates.filter(t => t.id !== id); save(); renderTpls();
+}
+function backup(){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], {type:'application/json'}));
+  a.download = 'briefs-respaldo-' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+}
+function restore(file){
+  if (!file) return;
+  file.text().then(txt => {
+    const d = JSON.parse(txt);
+    if (!d.brands || !d.templates) throw 0;
+    if (!confirm('¿Reemplazar marcas, plantillas y brief actual por los del respaldo?')) return;
+    S = d; save(); renderAll(); closeModal(); toast('Respaldo importado');
+  }).catch(() => toast('Ese archivo no es un respaldo válido'));
+}
+
+function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2200); }
+
+renderAll();
+</script>
+</body>
+</html>
