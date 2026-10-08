@@ -107,13 +107,10 @@
   .vacio{padding:50px 20px;text-align:center;color:var(--mut)}
 
   /* ===== marcas ===== */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-  .mcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
-  .mcard h3{margin:0;font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
-  .mcard .cols-c{display:flex;gap:14px;align-items:center;font-size:12px;color:var(--mut);font-weight:600}
-  .mcard .cols-c label{display:flex;align-items:center;gap:6px}
-  .mcard .ft{display:flex;gap:6px;margin-top:2px}
-  .mcard textarea{font-size:12.5px}
+  .mnom{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+  .mcol{display:flex;gap:6px}
+  textarea.mnotas{min-height:36px;font-size:12.5px;resize:none;overflow:hidden;line-height:1.4;display:block}
+  textarea.mnotas:disabled{background:transparent;border-color:transparent;color:var(--ink)}
   .addm{display:flex;gap:8px}
 
   /* ===== accesos ===== */
@@ -325,7 +322,7 @@
     <div class="page"><div class="page-in">
       <div class="page-hd"><h1>Marcas</h1><span class="muted" id="mCount"></span><div class="sp"></div>
         <div class="addm" id="addMarca"><input class="inp" id="nuevaMarca" placeholder="Nombre de la marca nueva" onkeydown="if(event.key==='Enter')altaMarca()"><button class="btn-pri" onclick="altaMarca()">Agregar marca</button></div></div>
-      <div class="grid" id="mGrid"></div>
+      <div class="tbl" id="mGrid"></div>
     </div></div>
   </section>
 
@@ -419,7 +416,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION_APP = '2026-10-08.1';
+const VERSION_APP = '2026-10-08.2';
 const SB_URL  = 'https://ojzcxwhoinmljospgmfp.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemN4d2hvaW5tbGpvc3BnbWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDY5MTYsImV4cCI6MjA5MzQ4MjkxNn0.jmvVP3weuclrBpQJb57BwmHD77Ofy4CDe43cnmiSFCk';
 const sb = supabase.createClient(SB_URL, SB_ANON);
@@ -674,19 +671,25 @@ async function borrarBrief(id){
 function renderMarcas(){
   const vis = marcasVisibles();
   $('mCount').textContent = vis.length + (vis.length === 1 ? ' marca' : ' marcas');
-  $('mGrid').innerHTML = vis.length ? vis.map(m => {
-    const c = cfg(m.id), ed = puedeEditar(m.id), dis = ed ? '' : ' disabled';
-    const n = D.briefs.filter(b => b.marca_id === m.id).length;
-    return `<div class="mcard" data-id="${m.id}">
-      <h3><span class="dot" style="background:${c.primario}"></span>${esc(m.nombre)}</h3>
-      <div class="cols-c"><label><input type="color" data-k="primario" value="${c.primario}"${dis}> Principal</label><label><input type="color" data-k="secundario" value="${c.secundario}"${dis}> Secundario</label></div>
-      <textarea class="inp" data-k="notas" placeholder="${ed ? 'Notas para el diseñador: tipografías, tono, logo, cosas a evitar…' : 'Sin notas'}"${dis}>${esc(c.notas || '')}</textarea>
-      <div class="ft"><button class="bt" onclick="verBriefsDe(${m.id})">Ver briefs (${n})</button>${ed ? `<button class="bt" onclick="abrirNuevo(${m.id})">+ Nuevo brief</button>` : ''}</div>
-    </div>`; }).join('') : `<div class="vacio" style="grid-column:1/-1">No tenés marcas asignadas. Pedile acceso a Tomás.</div>`;
+  $('mGrid').innerHTML = vis.length ? `<table><thead><tr><th>Marca</th><th>Colores</th><th style="width:45%">Notas para el diseñador</th><th>Briefs</th><th></th></tr></thead><tbody>` +
+    vis.map(m => {
+      const c = cfg(m.id), ed = puedeEditar(m.id), dis = ed ? '' : ' disabled';
+      const n = D.briefs.filter(b => b.marca_id === m.id).length;
+      return `<tr data-id="${m.id}">
+        <td class="nm"><span class="mnom"><span class="dot" style="background:${c.primario}"></span>${esc(m.nombre)}</span></td>
+        <td><div class="mcol"><input type="color" data-k="primario" value="${c.primario}" title="Principal: botones, cintillos, cupones"${dis}><input type="color" data-k="secundario" value="${c.secundario}" title="Secundario: footer y fondos"${dis}></div></td>
+        <td><textarea class="inp mnotas" rows="1" data-k="notas" placeholder="${ed ? 'Tipografías, tono, logo, cosas a evitar…' : 'Sin notas'}"${dis}>${esc(c.notas || '')}</textarea></td>
+        <td><button class="bt" onclick="verBriefsDe(${m.id})">Ver briefs (${n})</button></td>
+        <td style="text-align:right">${ed ? `<button class="bt" onclick="abrirNuevo(${m.id})">+ Nuevo brief</button>` : ''}</td>
+      </tr>`; }).join('') + `</tbody></table>`
+    : `<div class="vacio">No tenés marcas asignadas. Pedile acceso a Tomás.</div>`;
+  const ajustar = t => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 2 + 'px'; };
+  document.querySelectorAll('#mGrid .mnotas').forEach(ajustar);
   document.querySelectorAll('#mGrid [data-k]').forEach(inp => inp.addEventListener('input', () => {
-    const id = +inp.closest('.mcard').dataset.id;
+    const tr = inp.closest('tr'), id = +tr.dataset.id;
     D.config[id] = Object.assign({marca_id:id}, cfg(id), {[inp.dataset.k]: inp.value});
-    if (inp.dataset.k === 'primario') inp.closest('.mcard').querySelector('h3 .dot').style.background = inp.value;
+    if (inp.dataset.k === 'primario') tr.querySelector('.mnom .dot').style.background = inp.value;
+    if (inp.tagName === 'TEXTAREA') ajustar(inp);
     guardarConfig(id);
   }));
 }
