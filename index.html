@@ -128,7 +128,14 @@
 
   /* ===== marcas ===== */
   .mnom{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
-  .mcol{display:flex;gap:6px}
+  .mcol{display:flex;gap:14px}
+  .mc{display:flex;align-items:center;gap:7px}
+  .mc span{display:flex;flex-direction:column;line-height:1.1}
+  .mc small{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+  .hex{width:74px;border:0;border-bottom:1px dashed var(--line);background:transparent;color:var(--ink);font:600 12.5px ui-monospace,Consolas,monospace;padding:2px 0;text-transform:uppercase}
+  .hex:focus{outline:none;border-bottom-color:var(--acc)}
+  .hex.bad{color:var(--danger);border-bottom-color:var(--danger)}
+  .hex:disabled{border-bottom-color:transparent}
   textarea.mnotas{min-height:36px;font-size:12.5px;resize:none;overflow:hidden;line-height:1.4;display:block}
   textarea.mnotas:disabled{background:transparent;border-color:transparent;color:var(--ink)}
   .addm{display:flex;gap:8px}
@@ -437,7 +444,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION_APP = '2026-10-08.3';
+const VERSION_APP = '2026-10-08.4';
 const SB_URL  = 'https://ojzcxwhoinmljospgmfp.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemN4d2hvaW5tbGpvc3BnbWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDY5MTYsImV4cCI6MjA5MzQ4MjkxNn0.jmvVP3weuclrBpQJb57BwmHD77Ofy4CDe43cnmiSFCk';
 const sb = supabase.createClient(SB_URL, SB_ANON);
@@ -706,13 +713,14 @@ async function borrarBrief(id){
 function renderMarcas(){
   const vis = marcasVisibles();
   $('mCount').textContent = vis.length + (vis.length === 1 ? ' marca' : ' marcas');
-  $('mGrid').innerHTML = vis.length ? `<table><thead><tr><th>Marca</th><th>Colores</th><th style="width:45%">Notas para el diseñador</th><th>Briefs</th><th></th></tr></thead><tbody>` +
+  $('mGrid').innerHTML = vis.length ? `<table><thead><tr><th>Marca</th><th>Colores de la marca</th><th style="width:45%">Notas para el diseñador</th><th>Briefs</th><th></th></tr></thead><tbody>` +
     vis.map(m => {
       const c = cfg(m.id), ed = puedeEditar(m.id), dis = ed ? '' : ' disabled';
       const n = D.briefs.filter(b => b.marca_id === m.id).length;
       return `<tr data-id="${m.id}">
         <td class="nm"><span class="mnom"><span class="dot" style="background:${c.primario}"></span>${esc(m.nombre)}</span></td>
-        <td><div class="mcol"><input type="color" data-k="primario" value="${c.primario}" title="Principal: botones, cintillos, cupones"${dis}><input type="color" data-k="secundario" value="${c.secundario}" title="Secundario: footer y fondos"${dis}></div></td>
+        <td><div class="mcol">${[['primario','Principal','botones, cintillos, cupones'],['secundario','Secundario','footer y fondos']].map(([k,lbl,uso]) =>
+          `<label class="mc" title="${lbl}: ${uso}"><input type="color" data-k="${k}" value="${c[k]}"${dis}><span><small>${lbl}</small><input class="hex" data-hex="${k}" value="${c[k].toUpperCase()}" maxlength="7" spellcheck="false"${dis}></span></label>`).join('')}</div></td>
         <td><textarea class="inp mnotas" rows="1" data-k="notas" placeholder="${ed ? 'Tipografías, tono, logo, cosas a evitar…' : 'Sin notas'}"${dis}>${esc(c.notas || '')}</textarea></td>
         <td><button class="bt" onclick="verBriefsDe(${m.id})">Ver briefs (${n})</button></td>
         <td style="text-align:right">${ed ? `<button class="bt" onclick="abrirNuevo(${m.id})">+ Nuevo brief</button>` : ''}</td>
@@ -720,12 +728,32 @@ function renderMarcas(){
     : `<div class="vacio">No tenés marcas asignadas. Pedile acceso a Tomás.</div>`;
   const ajustar = t => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 2 + 'px'; };
   document.querySelectorAll('#mGrid .mnotas').forEach(ajustar);
-  document.querySelectorAll('#mGrid [data-k]').forEach(inp => inp.addEventListener('input', () => {
-    const tr = inp.closest('tr'), id = +tr.dataset.id;
-    D.config[id] = Object.assign({marca_id:id}, cfg(id), {[inp.dataset.k]: inp.value});
-    if (inp.dataset.k === 'primario') tr.querySelector('.mnom .dot').style.background = inp.value;
-    if (inp.tagName === 'TEXTAREA') ajustar(inp);
+  const setColor = (tr, k, v) => {
+    const id = +tr.dataset.id;
+    D.config[id] = Object.assign({marca_id:id}, cfg(id), {[k]: v});
+    if (k === 'primario') tr.querySelector('.mnom .dot').style.background = v;
     guardarConfig(id);
+  };
+  document.querySelectorAll('#mGrid [data-k]').forEach(inp => inp.addEventListener('input', () => {
+    const tr = inp.closest('tr');
+    if (inp.type === 'color') tr.querySelector(`[data-hex="${inp.dataset.k}"]`).value = inp.value.toUpperCase();
+    if (inp.tagName === 'TEXTAREA') ajustar(inp);
+    if (inp.type === 'color') setColor(tr, inp.dataset.k, inp.value);
+    else { const id = +tr.dataset.id; D.config[id] = Object.assign({marca_id:id}, cfg(id), {notas: inp.value}); guardarConfig(id); }
+  }));
+  // código hex escrito o pegado (acepta con o sin #, y de 3 o 6 dígitos)
+  document.querySelectorAll('#mGrid [data-hex]').forEach(inp => inp.addEventListener('input', () => {
+    let v = inp.value.trim().replace(/^#?/, '#');
+    if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + [...v.slice(1)].map(x => x + x).join('');
+    const ok = /^#[0-9a-f]{6}$/i.test(v);
+    inp.classList.toggle('bad', !ok && inp.value.length > 0);
+    if (!ok) return;
+    const tr = inp.closest('tr'); tr.querySelector(`[data-k="${inp.dataset.hex}"]`).value = v.toLowerCase();
+    setColor(tr, inp.dataset.hex, v.toLowerCase());
+  }));
+  // al salir del campo queda el código guardado (con #), o vuelve al anterior si era inválido
+  document.querySelectorAll('#mGrid [data-hex]').forEach(inp => inp.addEventListener('blur', () => {
+    inp.value = cfg(+inp.closest('tr').dataset.id)[inp.dataset.hex].toUpperCase(); inp.classList.remove('bad');
   }));
 }
 const cfgT = {};
