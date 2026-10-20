@@ -239,6 +239,32 @@
   .img.has .ed{font-size:12px;color:#8a8882;padding:4px 6px;text-align:center}
   .imgx{position:absolute;top:6px;right:6px;border:0;background:rgba(11,25,41,.75);color:#fff;border-radius:6px;font-size:11.5px;font-weight:700;padding:4px 8px;opacity:0}
   .img.has:hover .imgx{opacity:1}
+  .img .iw{position:relative}
+
+  /* elementos sobre la imagen (posición y ancho en % del recuadro) */
+  .lay{position:absolute;inset:0;pointer-events:none;z-index:2}
+  .img .ov-it{position:absolute;pointer-events:auto}
+  .img .ov-it .ed{width:auto;min-width:24px;text-align:center;line-height:1.2;word-break:break-word}
+  .img .ov-texto .ed{background:rgba(255,255,255,.9);color:#0b1929;font-weight:800;padding:4px 8px;border-radius:4px}
+  .img .ov-boton .ed{background:var(--bp);color:#fff;font-weight:700;padding:8px 12px;border-radius:6px}
+  .img .ov-etiqueta .ed{background:var(--bp);color:#fff;font-weight:800;padding:6px 10px;border-radius:999px}
+  .img .ov-nota .ed{background:#fff7c2;border:1px solid #efd96a;color:#5b4d00;font-size:12px;font-weight:500;padding:6px 8px;border-radius:4px;text-align:left;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  .img .ov-it.s1 .ed{font-size:12px}.img .ov-it.s2 .ed{font-size:16px}.img .ov-it.s3 .ed{font-size:24px}.img .ov-it.s4 .ed{font-size:34px}
+  .img .ov-nota.s1 .ed,.img .ov-nota .ed{font-size:12px}
+  .img .ov-boton .ed:empty::before,.img .ov-etiqueta .ed:empty::before,.img .ov-boton .ph,.img .ov-etiqueta .ph{color:rgba(255,255,255,.75) !important}
+  .img .ov-texto .ph{color:#9aa0ab !important}
+  .ov-grip{position:absolute;left:0;bottom:100%;height:20px;background:var(--acc);color:#fff;font-size:10.5px;font-weight:700;padding:0 2px 0 6px;border-radius:4px 4px 0 0;cursor:move;display:flex;align-items:center;gap:2px;opacity:0;white-space:nowrap;user-select:none;touch-action:none;text-transform:uppercase;letter-spacing:.03em}
+  .ov-grip button{border:0;background:transparent;color:#fff;font-size:11px;font-weight:700;padding:1px 5px;border-radius:3px;cursor:pointer}
+  .ov-grip button:hover{background:rgba(255,255,255,.25)}
+  .ov-rs{position:absolute;right:-6px;bottom:-6px;width:12px;height:12px;background:#fff;border:2px solid var(--acc);border-radius:3px;cursor:ew-resize;opacity:0;touch-action:none}
+  .edit .ov-it:hover,.ov-it.act{outline:1.5px dashed var(--acc);outline-offset:2px}
+  .edit .ov-it:hover .ov-grip,.edit .ov-it:hover .ov-rs,.ov-it.act .ov-grip,.ov-it.act .ov-rs,.edit .ov-it:focus-within .ov-grip{opacity:1}
+  .addov{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:4px;opacity:0;z-index:3;transition:opacity .15s;flex-wrap:wrap;justify-content:center;width:max-content;max-width:96%}
+  .edit .img:hover > .addov,.edit .img .iw:hover > .addov{opacity:1}
+  .addov button{border:0;background:rgba(11,25,41,.85);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:12px;cursor:pointer}
+  .addov button:hover{background:var(--acc)}
+  .ovtiles .tile{height:86px;gap:8px}
+  .ovtiles .tile svg{width:30px;height:30px}
   .ro .up,.ro .imgx,.ro .ed.opt:empty{display:none}
 
   .b-logo{display:flex;align-items:center;justify-content:center;padding:18px 24px;border-bottom:1px solid var(--line)}
@@ -281,7 +307,8 @@
   .mob .col .img{height:170px}
 
   /* export */
-  .exporting .tb,.exporting .tag,.exporting .up,.exporting .imgx{display:none !important}
+  .exporting .tb,.exporting .tag,.exporting .up,.exporting .imgx,.exporting .ov-grip,.exporting .ov-rs,.exporting .addov{display:none !important}
+  .exporting .ov-it{outline:none !important}
   .exporting .blk:hover,.exporting .ed:hover{box-shadow:none !important}
 
   /* ===== panel derecho ===== */
@@ -441,8 +468,13 @@
           <button data-t="plantillas" id="tabTplBtn" onclick="setTab('plantillas')">Plantillas</button>
         </div>
         <div class="tabp" id="tab-contenido">
+          <div class="sec">Bloques</div>
           <div class="tiles" id="palList"></div>
-          <p class="hint">Arrastrá un bloque al email o hacé click para sumarlo al final. Click sobre cualquier texto del email para editarlo. Para las imágenes: botón “Subir imagen”, arrastrá el archivo al recuadro o pegalo con Ctrl+V.</p>
+          <div class="sec" style="margin-top:22px">Sobre las imágenes</div>
+          <div class="tiles ovtiles" id="ovList"></div>
+          <p class="hint">• <b>Bloques:</b> arrastralos al email o hacé click para sumarlos al final.<br>
+            • <b>Sobre las imágenes:</b> arrastralos encima de cualquier imagen (o usá los botones que aparecen al pasar el mouse por la imagen). Se mueven desde la pestaña naranja y se agrandan desde la esquina.<br>
+            • <b>Fotos de referencia:</b> soltá un archivo en cualquier parte del email o pegalo con Ctrl+V y se crea la imagen.</p>
         </div>
         <div class="tabp" id="tab-plantillas" hidden>
           <div class="sec">Guardar este brief como plantilla</div>
@@ -489,7 +521,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION_APP = '2026-10-08.5';
+const VERSION_APP = '2026-10-20.1';
 const SB_URL  = 'https://ojzcxwhoinmljospgmfp.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemN4d2hvaW5tbGpvc3BnbWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDY5MTYsImV4cCI6MjA5MzQ4MjkxNn0.jmvVP3weuclrBpQJb57BwmHD77Ofy4CDe43cnmiSFCk';
 const sb = supabase.createClient(SB_URL, SB_ANON);
@@ -1053,9 +1085,68 @@ function setMob(on){
 // paleta de bloques
 $('palList').innerHTML = Object.entries(TYPES).map(([k,t]) =>
   `<div class="tile" draggable="true" data-type="${k}" title="${t.label}"><svg viewBox="0 0 40 40">${t.ico}</svg><span>${t.tile}</span></div>`).join('');
-document.querySelectorAll('.tile').forEach(el => {
+document.querySelectorAll('.tile[data-type]').forEach(el => {
   el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', 'new:' + el.dataset.type); e.dataTransfer.effectAllowed = 'copyMove'; });
   el.addEventListener('click', () => { if (!EDIT) return; cur.doc.blocks.push(mk(el.dataset.type)); save(); renderEmail(); document.querySelector('.stage').scrollTo({top:1e6, behavior:'smooth'}); });
+});
+
+// ---------- elementos sobre las imágenes ----------
+// Cada imagen (o recuadro de imagen) guarda una capa en b.d[<campo>Lay]: [{id, t, x, y, w, s, text}]
+// con posición y ancho en % del recuadro, así sirve igual en escritorio y en celular.
+const OVS = {
+  texto:    {label:'Texto',    ph:'Texto sobre la imagen', w:46, s:2, ico:'<path d="M9 10h22M20 10v22"/>'},
+  boton:    {label:'Botón',    ph:'Botón',                 w:26, s:2, ico:'<rect x="5" y="13" width="30" height="14" rx="4"/><path d="M12 20h16"/>'},
+  etiqueta: {label:'Etiqueta', ph:'-30%',                  w:16, s:2, ico:'<path d="M6 8h14l14 14-12 12L8 20z"/><circle cx="14" cy="15" r="2"/>'},
+  nota:     {label:'Nota',     ph:'Indicación para diseño',w:30, s:1, ico:'<path d="M8 6h18l6 6v22H8z"/><path d="M13 18h14M13 23h14M13 28h9"/>'},
+};
+let dragOv = null;   // tipo que se está arrastrando desde el panel
+$('ovList').innerHTML = Object.entries(OVS).map(([k,t]) =>
+  `<div class="tile ovtile" draggable="true" data-ov="${k}" title="Arrastralo encima de una imagen"><svg viewBox="0 0 40 40">${t.ico}</svg><span>${t.label}</span></div>`).join('');
+document.querySelectorAll('.tile[data-ov]').forEach(el => {
+  el.addEventListener('dragstart', e => { dragOv = el.dataset.ov; e.dataTransfer.setData('text/plain', 'ov:' + dragOv); e.dataTransfer.effectAllowed = 'copy'; });
+  el.addEventListener('dragend', () => { dragOv = null; email.querySelectorAll('.img.drop').forEach(x => x.classList.remove('drop')); });
+  el.addEventListener('click', () => toast('Arrastralo encima de una imagen del email'));
+});
+function sumarOv(b, f, t, x, y){
+  const arr = getP(b.d, f + 'Lay') || [], o = OVS[t];
+  arr.push({id:uid(), t, w:o.w, s:o.s, text:'',
+    x: Math.max(0, Math.min(100 - o.w, (x ?? 50) - o.w / 2)), y: Math.max(0, Math.min(92, (y ?? 45) - 4))});
+  setP(b.d, f + 'Lay', arr);
+}
+function capaHTML(b, f){
+  const arr = getP(b.d, f + 'Lay') || [];
+  return `<div class="lay">` + arr.map((o, i) => `<div class="ov-it ov-${o.t} s${o.s || 2}" data-i="${i}" style="left:${o.x}%;top:${o.y}%;width:${o.w}%">
+      ${EDIT ? `<div class="ov-grip" title="Arrastrá para mover">⠿ ${OVS[o.t]?.label || ''}${o.t !== 'nota' ? `<button data-a="ovsize" data-img="${f}" data-i="${i}" title="Tamaño de letra">Aa</button>` : ''}<button data-a="ovdel" data-img="${f}" data-i="${i}" title="Quitar">✕</button></div><span class="ov-rs" title="Arrastrá para cambiar el ancho"></span>` : ''}
+      ${ed(b, `${f}Lay.${i}.text`, OVS[o.t]?.ph || '')}</div>`).join('') + `</div>` +
+    (EDIT ? `<div class="addov">${Object.entries(OVS).map(([k,t]) => `<button data-a="ovadd" data-t="${k}" data-img="${f}">+ ${t.label}</button>`).join('')}</div>` : '');
+}
+
+// mover / cambiar ancho con el mouse (pointer events: anda también en touch)
+let mov = null;
+document.addEventListener('pointerdown', e => {
+  if (!EDIT) return;
+  const g = e.target.closest?.('.ov-grip, .ov-rs'); if (!g || e.target.closest('button')) return;
+  const it = g.closest('.ov-it'), caja = it.closest('.lay').getBoundingClientRect();
+  e.preventDefault();
+  mov = {it, caja, modo: g.classList.contains('ov-rs') ? 'ancho' : 'mover', x0:e.clientX, y0:e.clientY,
+         l:parseFloat(it.style.left), t:parseFloat(it.style.top), w:parseFloat(it.style.width)};
+  it.classList.add('act');
+});
+document.addEventListener('pointermove', e => {
+  if (!mov) return;
+  const dx = (e.clientX - mov.x0) / mov.caja.width * 100, dy = (e.clientY - mov.y0) / mov.caja.height * 100;
+  if (mov.modo === 'mover'){
+    mov.it.style.left = Math.max(0, Math.min(100 - mov.w, mov.l + dx)) + '%';
+    mov.it.style.top  = Math.max(0, Math.min(97, mov.t + dy)) + '%';
+  } else mov.it.style.width = Math.max(8, Math.min(100 - mov.l, mov.w + dx)) + '%';
+});
+document.addEventListener('pointerup', () => {
+  if (!mov) return;
+  const it = mov.it, f = it.closest('.lay').parentElement.closest('[data-img]').dataset.img;
+  const b = cur.doc.blocks.find(x => x.id === it.closest('.blk').dataset.id);
+  const o = getP(b.d, f + 'Lay')[+it.dataset.i];
+  o.x = +parseFloat(it.style.left).toFixed(1); o.y = +parseFloat(it.style.top).toFixed(1); o.w = +parseFloat(it.style.width).toFixed(1);
+  it.classList.remove('act'); mov = null; save();
 });
 
 // render
@@ -1064,8 +1155,8 @@ const setP = (o, p, v) => { const ks = p.split('.'); const last = ks.pop(); ks.r
 const ed = (b, f, ph, cls='') => `<div class="ed ${cls}"${EDIT ? ' contenteditable="plaintext-only"' : ''} data-f="${f}" data-ph="${esc(ph)}">${esc(getP(b.d, f))}</div>`;
 function imgBox(b, f, ph='Describí la imagen'){
   const url = getP(b.d, f + 'Url');
-  if (url) return `<div class="img has" data-img="${f}"><img src="${esc(url)}" crossorigin="anonymous" alt="">${ed(b, f, 'Comentario sobre la imagen (opcional)', 'opt')}<button class="imgx" data-a="quitarimg" data-img="${f}">✕ Quitar</button></div>`;
-  return `<div class="img" data-img="${f}">${ed(b, f, ph)}${EDIT ? `<label class="up">📷 Subir imagen<input type="file" accept="image/*"></label>` : ''}</div>`;
+  if (url) return `<div class="img has" data-img="${f}"><div class="iw"><img src="${esc(url)}" crossorigin="anonymous" alt="">${capaHTML(b, f)}<button class="imgx" data-a="quitarimg" data-img="${f}">✕ Quitar imagen</button></div>${ed(b, f, 'Comentario sobre la imagen (opcional)', 'opt')}</div>`;
+  return `<div class="img" data-img="${f}">${ed(b, f, ph)}${EDIT ? `<label class="up">📷 Subir imagen<input type="file" accept="image/*"></label>` : ''}${capaHTML(b, f)}</div>`;
 }
 const link = (b, f='link') => `<div class="lnk">🔗 ${ed(b, f, 'link de destino')}</div>`;
 
@@ -1192,6 +1283,9 @@ $('email').addEventListener('click', e => {
     case 'addcol': if (b.d.items.length < 4){ b.d.items.push(item()); b.type = 'col' + Math.min(b.d.items.length,3); } break;
     case 'rmcol':  if (b.d.items.length > 2){ b.d.items.pop(); b.type = 'col' + b.d.items.length; } break;
     case 'quitarimg': setP(b.d, btn.dataset.img + 'Url', ''); break;
+    case 'ovadd': sumarOv(b, btn.dataset.img, btn.dataset.t); break;
+    case 'ovdel': getP(b.d, btn.dataset.img + 'Lay').splice(+btn.dataset.i, 1); break;
+    case 'ovsize': { const o = getP(b.d, btn.dataset.img + 'Lay')[+btn.dataset.i]; o.s = (o.s || 2) % 4 + 1; break; }
   }
   save(); renderEmail();
 });
@@ -1202,12 +1296,19 @@ $('email').addEventListener('change', e => {
   subirImg(inp.files[0], inp.closest('.blk').dataset.id, inp.closest('.img').dataset.img);
 });
 document.addEventListener('paste', e => {
-  if (!EDIT || !cur) return;
-  const box = document.activeElement?.closest?.('.img'); if (!box) return;
+  if (!EDIT || !cur || $('vEditor').hidden) return;
   const f = [...(e.clipboardData?.files || [])].find(x => x.type.startsWith('image/'));
   if (!f) return;
-  e.preventDefault(); subirImg(f, box.closest('.blk').dataset.id, box.dataset.img);
+  e.preventDefault();
+  const box = document.activeElement?.closest?.('.img');
+  if (box) subirImg(f, box.closest('.blk').dataset.id, box.dataset.img);
+  else imagenNueva(f, cur.doc.blocks.length);   // pegada sin recuadro elegido: imagen nueva al final
 });
+// crea un bloque de imagen en la posición i y le sube el archivo
+function imagenNueva(file, i){
+  const b = mk('imagen'); cur.doc.blocks.splice(i, 0, b);
+  save(); renderEmail(); subirImg(file, b.id, 'img');
+}
 // achica fotos grandes antes de subir (max 1400px de ancho)
 async function achicar(file){
   if (file.type === 'image/gif') return file;
@@ -1260,7 +1361,9 @@ email.addEventListener('dragover', e => {
   if (!EDIT) return;
   e.preventDefault();
   email.querySelectorAll('.img.drop').forEach(x => x.classList.remove('drop'));
-  if (esArchivo(e)){ dropLine.remove(); e.target.closest?.('.img')?.classList.add('drop'); return; }
+  if (dragOv){ dropLine.remove(); e.target.closest?.('.img')?.classList.add('drop'); return; }
+  const caja = e.target.closest?.('.img');
+  if (esArchivo(e) && caja){ dropLine.remove(); caja.classList.add('drop'); return; }
   const blks = [...email.querySelectorAll('.blk')], i = dropIndex(e.clientY);
   if (!blks.length) return;
   if (i < blks.length) email.insertBefore(dropLine, blks[i]); else email.appendChild(dropLine);
@@ -1269,12 +1372,22 @@ email.addEventListener('dragleave', e => { if (!email.contains(e.relatedTarget))
 email.addEventListener('drop', e => {
   if (!EDIT) return;
   e.preventDefault(); dropLine.remove();
+  email.querySelectorAll('.img.drop').forEach(x => x.classList.remove('drop'));
+  const box = e.target.closest?.('.img');
+  // elemento del panel "Sobre las imágenes": queda donde se soltó
+  if (dragOv){
+    const t = dragOv; dragOv = null;
+    if (!box) return toast('Soltalo encima de una imagen', true);
+    const r = (box.querySelector('.iw') || box).getBoundingClientRect();
+    const b = cur.doc.blocks.find(x => x.id === box.closest('.blk').dataset.id);
+    sumarOv(b, box.dataset.img, t, (e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 100);
+    save(); renderEmail(); return;
+  }
   if (esArchivo(e)){
-    const box = e.target.closest?.('.img');
-    email.querySelectorAll('.img.drop').forEach(x => x.classList.remove('drop'));
     const f = [...e.dataTransfer.files].find(x => x.type.startsWith('image/'));
-    if (box && f) subirImg(f, box.closest('.blk').dataset.id, box.dataset.img);
-    else if (f) toast('Soltá la imagen sobre un recuadro de imagen', true);
+    if (!f) return toast('Eso no es una imagen', true);
+    if (box) subirImg(f, box.closest('.blk').dataset.id, box.dataset.img);
+    else imagenNueva(f, dropIndex(e.clientY));   // fuera de un recuadro: bloque de imagen nuevo ahí
     return;
   }
   const data = e.dataTransfer.getData('text/plain');
