@@ -239,30 +239,44 @@
   .img.has .ed{font-size:12px;color:#8a8882;padding:4px 6px;text-align:center}
   .imgx{position:absolute;top:6px;right:6px;border:0;background:rgba(11,25,41,.75);color:#fff;border-radius:6px;font-size:11.5px;font-weight:700;padding:4px 8px;opacity:0}
   .img.has:hover .imgx{opacity:1}
-  .img .iw{position:relative}
+  .img .iw{position:relative;container-type:inline-size}
+  .img:not(.has){container-type:inline-size}
 
-  /* elementos sobre la imagen (posición y ancho en % del recuadro) */
+  /* elementos sobre la imagen (posición y ancho en % del recuadro).
+     La letra se escala con el ancho del recuadro (cqw) con mínimo y máximo:
+     en el hero queda grande y en una columna chica no se vuelve tosca. */
   .lay{position:absolute;inset:0;pointer-events:none;z-index:2}
   .img .ov-it{position:absolute;pointer-events:auto}
-  .img .ov-it .ed{width:auto;min-width:24px;text-align:center;line-height:1.2;word-break:break-word}
-  .img .ov-texto .ed{background:rgba(255,255,255,.9);color:#0b1929;font-weight:800;padding:4px 8px;border-radius:4px}
-  .img .ov-boton .ed{background:var(--bp);color:#fff;font-weight:700;padding:8px 12px;border-radius:6px}
-  .img .ov-etiqueta .ed{background:var(--bp);color:#fff;font-weight:800;padding:6px 10px;border-radius:999px}
-  .img .ov-nota .ed{background:#fff7c2;border:1px solid #efd96a;color:#5b4d00;font-size:12px;font-weight:500;padding:6px 8px;border-radius:4px;text-align:left;box-shadow:0 2px 8px rgba(0,0,0,.18)}
-  .img .ov-it.s1 .ed{font-size:12px}.img .ov-it.s2 .ed{font-size:16px}.img .ov-it.s3 .ed{font-size:24px}.img .ov-it.s4 .ed{font-size:34px}
-  .img .ov-nota.s1 .ed,.img .ov-nota .ed{font-size:12px}
+  .img .ov-it .ed{width:auto;min-width:1.5em;text-align:center;line-height:1.2;word-break:break-word}
+  .img .ov-texto .ed{background:rgba(255,255,255,.9);color:#0b1929;font-weight:800;padding:.25em .5em;border-radius:.25em}
+  .img .ov-boton .ed{background:var(--bp);color:#fff;font-weight:700;padding:.5em .8em;border-radius:.35em;white-space:nowrap}
+  .img .ov-etiqueta .ed{background:var(--bp);color:#fff;font-weight:800;padding:.35em .7em;border-radius:999px;white-space:nowrap}
+  .img .ov-boton,.img .ov-etiqueta{min-width:max-content}
+  .img .ov-nota .ed{background:#fff7c2;border:1px solid #efd96a;color:#5b4d00;font-weight:500;padding:.4em .55em;border-radius:4px;text-align:left;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+  .img .ov-it.s1 .ed{font-size:clamp(9px,2cqw,12px)}
+  .img .ov-it.s2 .ed{font-size:clamp(10px,2.8cqw,16px)}
+  .img .ov-it.s3 .ed{font-size:clamp(12px,4.2cqw,24px)}
+  .img .ov-it.s4 .ed{font-size:clamp(14px,5.8cqw,34px)}
+  .img .ov-nota .ed,.img .ov-nota.s1 .ed{font-size:clamp(9px,2cqw,12px)}
   .img .ov-boton .ed:empty::before,.img .ov-etiqueta .ed:empty::before,.img .ov-boton .ph,.img .ov-etiqueta .ph{color:rgba(255,255,255,.75) !important}
   .img .ov-texto .ph{color:#9aa0ab !important}
-  .ov-grip{position:absolute;left:0;bottom:100%;height:20px;background:var(--acc);color:#fff;font-size:10.5px;font-weight:700;padding:0 2px 0 6px;border-radius:4px 4px 0 0;cursor:move;display:flex;align-items:center;gap:2px;opacity:0;white-space:nowrap;user-select:none;touch-action:none;text-transform:uppercase;letter-spacing:.03em}
-  .ov-grip button{border:0;background:transparent;color:#fff;font-size:11px;font-weight:700;padding:1px 5px;border-radius:3px;cursor:pointer}
+  /* pestaña de cada elemento: solo íconos, compacta */
+  .ov-grip{position:absolute;left:-1px;bottom:calc(100% + 2px);height:18px;background:var(--acc);color:#fff;font-size:10px;font-weight:700;padding:0 1px 0 4px;border-radius:4px 4px 0 0;cursor:move;display:flex;align-items:center;gap:0;opacity:0;white-space:nowrap;user-select:none;touch-action:none}
+  .ov-grip button{border:0;background:transparent;color:#fff;font-size:10px;font-weight:700;padding:1px 4px;border-radius:3px;cursor:pointer;line-height:1}
   .ov-grip button:hover{background:rgba(255,255,255,.25)}
-  .ov-rs{position:absolute;right:-6px;bottom:-6px;width:12px;height:12px;background:#fff;border:2px solid var(--acc);border-radius:3px;cursor:ew-resize;opacity:0;touch-action:none}
-  .edit .ov-it:hover,.ov-it.act{outline:1.5px dashed var(--acc);outline-offset:2px}
+  .ov-rs{position:absolute;right:-5px;bottom:-5px;width:10px;height:10px;background:#fff;border:2px solid var(--acc);border-radius:2px;cursor:ew-resize;opacity:0;touch-action:none}
+  .edit .ov-it:hover,.ov-it.act{outline:1px dashed var(--acc);outline-offset:2px}
   .edit .ov-it:hover .ov-grip,.edit .ov-it:hover .ov-rs,.ov-it.act .ov-grip,.ov-it.act .ov-rs,.edit .ov-it:focus-within .ov-grip{opacity:1}
-  .addov{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:4px;opacity:0;z-index:3;transition:opacity .15s;flex-wrap:wrap;justify-content:center;width:max-content;max-width:96%}
-  .edit .img:hover > .addov,.edit .img .iw:hover > .addov{opacity:1}
-  .addov button{border:0;background:rgba(11,25,41,.85);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:12px;cursor:pointer}
-  .addov button:hover{background:var(--acc)}
+  /* un solo "+" en la esquina de la imagen; despliega el menú */
+  .addov{position:absolute;left:6px;bottom:6px;z-index:4;opacity:0;transition:opacity .15s}
+  .edit .img:hover > .addov,.edit .img .iw:hover > .addov,.addov.open{opacity:1}
+  .addov-btn{width:24px;height:24px;border-radius:50%;border:0;background:var(--acc);color:#fff;font-size:16px;font-weight:700;line-height:1;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:0}
+  .addov-btn:hover{background:var(--acc2)}
+  .addov-menu{display:none;position:absolute;left:0;bottom:28px;background:#fff;border:1px solid #e3e5e9;border-radius:8px;box-shadow:0 6px 20px rgba(11,25,41,.22);padding:4px;min-width:128px}
+  .addov.open .addov-menu{display:block}
+  .addov-menu button{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;color:#0b1929;font-size:12px;font-weight:600;padding:6px 8px;border-radius:5px;cursor:pointer;text-align:left}
+  .addov-menu button:hover{background:#fde6df;color:var(--acc)}
+  .addov-menu svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
   .ovtiles .tile{height:86px;gap:8px}
   .ovtiles .tile svg{width:30px;height:30px}
   .ro .up,.ro .imgx,.ro .ed.opt:empty{display:none}
@@ -521,7 +535,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION_APP = '2026-10-20.1';
+const VERSION_APP = '2026-10-20.2';
 const SB_URL  = 'https://ojzcxwhoinmljospgmfp.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemN4d2hvaW5tbGpvc3BnbWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDY5MTYsImV4cCI6MjA5MzQ4MjkxNn0.jmvVP3weuclrBpQJb57BwmHD77Ofy4CDe43cnmiSFCk';
 const sb = supabase.createClient(SB_URL, SB_ANON);
@@ -1116,10 +1130,14 @@ function sumarOv(b, f, t, x, y){
 function capaHTML(b, f){
   const arr = getP(b.d, f + 'Lay') || [];
   return `<div class="lay">` + arr.map((o, i) => `<div class="ov-it ov-${o.t} s${o.s || 2}" data-i="${i}" style="left:${o.x}%;top:${o.y}%;width:${o.w}%">
-      ${EDIT ? `<div class="ov-grip" title="Arrastrá para mover">⠿ ${OVS[o.t]?.label || ''}${o.t !== 'nota' ? `<button data-a="ovsize" data-img="${f}" data-i="${i}" title="Tamaño de letra">Aa</button>` : ''}<button data-a="ovdel" data-img="${f}" data-i="${i}" title="Quitar">✕</button></div><span class="ov-rs" title="Arrastrá para cambiar el ancho"></span>` : ''}
+      ${EDIT ? `<div class="ov-grip" title="${OVS[o.t]?.label || ''}: arrastrá para mover">⠿${o.t !== 'nota' ? `<button data-a="ovsize" data-img="${f}" data-i="${i}" title="Tamaño de letra">Aa</button>` : ''}<button data-a="ovdel" data-img="${f}" data-i="${i}" title="Quitar">✕</button></div><span class="ov-rs" title="Arrastrá para cambiar el ancho"></span>` : ''}
       ${ed(b, `${f}Lay.${i}.text`, OVS[o.t]?.ph || '')}</div>`).join('') + `</div>` +
-    (EDIT ? `<div class="addov">${Object.entries(OVS).map(([k,t]) => `<button data-a="ovadd" data-t="${k}" data-img="${f}">+ ${t.label}</button>`).join('')}</div>` : '');
+    (EDIT ? `<div class="addov"><button class="addov-btn" data-a="ovmenu" title="Agregar texto, botón, etiqueta o nota sobre la imagen">+</button>
+      <div class="addov-menu">${Object.entries(OVS).map(([k,t]) => `<button data-a="ovadd" data-t="${k}" data-img="${f}"><svg viewBox="0 0 40 40">${t.ico}</svg>${t.label}</button>`).join('')}</div></div>` : '');
 }
+
+// click afuera cierra el menú del "+"
+document.addEventListener('click', e => { if (!e.target.closest?.('.addov')) document.querySelectorAll('.addov.open').forEach(x => x.classList.remove('open')); });
 
 // mover / cambiar ancho con el mouse (pointer events: anda también en touch)
 let mov = null;
@@ -1273,6 +1291,11 @@ $('sheet').addEventListener('input', e => {
 
 $('email').addEventListener('click', e => {
   const btn = e.target.closest('button[data-a]'); if (!btn || !EDIT) return;
+  if (btn.dataset.a === 'ovmenu'){   // abre/cierra el menú del "+" sin re-renderizar
+    const box = btn.parentElement, abierto = box.classList.contains('open');
+    email.querySelectorAll('.addov.open').forEach(x => x.classList.remove('open'));
+    box.classList.toggle('open', !abierto); return;
+  }
   const bl = cur.doc.blocks, i = bl.findIndex(x => x.id === btn.closest('.blk').dataset.id), b = bl[i];
   switch(btn.dataset.a){
     case 'up':    if (i > 0) [bl[i-1], bl[i]] = [bl[i], bl[i-1]]; break;
