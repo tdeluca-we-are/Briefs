@@ -216,13 +216,44 @@
   .edit .blk:hover{box-shadow:inset 0 0 0 2px rgba(240,78,35,.5)}
   .blk .tag{position:absolute;left:0;top:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:var(--acc);color:#fff;padding:2px 7px;border-radius:0 0 4px 0;opacity:0;pointer-events:none;z-index:2}
   .blk .tb{position:absolute;right:-1px;top:-1px;display:flex;gap:1px;opacity:0;z-index:3;background:var(--acc);border-radius:0 0 0 6px;padding:2px}
-  .edit .blk:hover .tag,.edit .blk:hover .tb{opacity:1}
+  .edit .blk:hover > .tag,.edit .blk:hover > .tb{opacity:1}
   .tb button{border:0;padding:3px 7px;font-size:12px;border-radius:4px;background:transparent;line-height:1.3;color:#fff}
   .tb button:hover{background:rgba(255,255,255,.22)}
   .tb .h{cursor:grab}
   .blk.dragging{opacity:.35}
   .dropline{height:4px;background:var(--acc);border-radius:2px;margin:-2px 0;position:relative;z-index:5}
   .dropline::after{content:"Soltar acá";position:absolute;left:50%;top:-9px;transform:translateX(-50%);background:var(--acc);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px}
+
+  /* filas con columnas (azul, para distinguirlas de los bloques en naranja) */
+  .blk.fila{--fila:#3987e5}
+  .edit .blk.fila:hover{box-shadow:inset 0 0 0 2px rgba(57,135,229,.6)}
+  .row-f{display:grid;gap:12px;padding:10px 14px}
+  .colf{min-width:0;min-height:60px;position:relative;border-radius:4px}
+  .edit .fila:hover .colf{box-shadow:0 0 0 1px rgba(57,135,229,.35)}
+  .colvacia{border:2px dashed #cfd3da;border-radius:6px;padding:16px 8px;color:#9aa0ab;font-size:12px;font-weight:600;min-height:60px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .tbf{position:absolute;left:100%;top:0;margin-left:5px;display:flex;flex-direction:column;gap:1px;background:var(--fila);border-radius:6px;padding:2px;opacity:0;z-index:6}
+  .edit .fila:hover > .tbf{opacity:1}
+  .tbf button{border:0;padding:3px 6px;font-size:12px;border-radius:4px;background:transparent;line-height:1.3;color:#fff;cursor:pointer}
+  .tbf button:hover{background:rgba(255,255,255,.22)}
+  .tbf .h{cursor:grab}
+  .tbf .fl{font-size:8.5px;font-weight:800;color:#fff;text-align:center;letter-spacing:.04em;padding:2px 0 1px}
+  .colf .pad{padding:10px 12px}
+  .colf .h1{font-size:20px}.colf .h2{font-size:17px}.colf .txt{font-size:14px}
+  .colf .b-hero .img{height:170px}.colf .b-imagen{padding:4px 0 !important}.colf .b-imagen .img{height:150px}
+  .colf .btn{min-width:0;padding:10px 16px}
+  .colf .b-logo{padding:10px}.colf .cols{padding:8px 0}
+  .colf .b-nota{margin:6px 0}.colf .b-sep{padding:8px 0}
+  .colf .b-cupon .cbig{font-size:22px}
+  .mob .row-f{grid-template-columns:1fr !important}
+  .exporting .tbf{display:none !important}
+  .ro .colvacia{display:none}
+
+  /* bloques guardados (panel) */
+  .blq{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin-bottom:8px;cursor:grab;background:var(--surface)}
+  .blq:hover{border-color:var(--acc)}
+  .blq svg{width:28px;height:28px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none;color:var(--mut)}
+  .blq .nm{font-weight:700;font-size:13px}
+  .filatile svg rect{fill:rgba(57,135,229,.18);stroke:#3987e5}
 
   .pad{padding:22px 36px}
   .al-left{text-align:left}.al-center{text-align:center}
@@ -328,7 +359,7 @@
   /* ===== panel derecho ===== */
   .side{width:410px;flex:none;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
   .tabs{display:flex;flex:none}
-  .tabs button{flex:1;border:0;border-bottom:1px solid var(--line);border-left:1px solid var(--line);background:var(--tab-off);color:var(--tab-off-ink);padding:15px 6px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .tabs button{flex:1;border:0;border-bottom:1px solid var(--line);border-left:1px solid var(--line);background:var(--tab-off);color:var(--tab-off-ink);padding:15px 4px;font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
   .tabs button:first-child{border-left:0}
   .tabs button.on{background:var(--surface);color:var(--ink);border-bottom-color:var(--surface);box-shadow:inset 0 3px 0 var(--acc)}
   .tabp{flex:1;overflow:auto;padding:18px}
@@ -479,6 +510,8 @@
       <aside class="side" id="side">
         <div class="tabs">
           <button data-t="contenido" class="on" onclick="setTab('contenido')">Contenido</button>
+          <button data-t="filas" onclick="setTab('filas')">Filas</button>
+          <button data-t="guardados" onclick="setTab('guardados')">Guardados</button>
           <button data-t="plantillas" id="tabTplBtn" onclick="setTab('plantillas')">Plantillas</button>
         </div>
         <div class="tabp" id="tab-contenido">
@@ -489,6 +522,17 @@
           <p class="hint">• <b>Bloques:</b> arrastralos al email o hacé click para sumarlos al final.<br>
             • <b>Sobre las imágenes:</b> arrastralos encima de cualquier imagen (o usá los botones que aparecen al pasar el mouse por la imagen). Se mueven desde la pestaña naranja y se agrandan desde la esquina.<br>
             • <b>Fotos de referencia:</b> soltá un archivo en cualquier parte del email o pegalo con Ctrl+V y se crea la imagen.</p>
+        </div>
+        <div class="tabp" id="tab-filas" hidden>
+          <div class="sec">Estructura de la fila</div>
+          <div class="tiles" id="filaList"></div>
+          <p class="hint">Arrastrá una fila al email (o hacé click para sumarla al final). Después soltá contenido dentro de cada columna desde la pestaña <b>Contenido</b>: título, párrafo, imagen, botón… Lo que ya está en el email también se puede arrastrar adentro o afuera de una columna desde su ⠿.<br>
+            El botón ▥ de la fila cambia la cantidad de columnas. En la vista celular las columnas se apilan.</p>
+        </div>
+        <div class="tabp" id="tab-guardados" hidden>
+          <div class="sec">Bloques guardados</div>
+          <div id="blqList"></div>
+          <p class="hint">Para guardar: pasá el mouse por un bloque o una fila del email y tocá <b>☆</b>. Después lo arrastrás desde acá a cualquier brief (o click para sumarlo al final).</p>
         </div>
         <div class="tabp" id="tab-plantillas" hidden>
           <div class="sec">Guardar este brief como plantilla</div>
@@ -532,10 +576,19 @@
     <div class="ft"><button class="bt" onclick="$('ovTpl').classList.remove('on')">Cancelar</button><button class="btn-pri" onclick="crearTpl()">Crear y editar</button></div>
   </div>
 </div>
+<!-- modal: guardar bloque -->
+<div class="ov" id="ovBlq" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="modal">
+    <h3>Guardar bloque para reutilizar</h3>
+    <label>Nombre</label><input class="inp" id="gbNom" placeholder="Ej: Header con logo y menú, Fila de 3 productos…" onkeydown="if(event.key==='Enter')guardarBloque()">
+    <label>Disponible para</label><select class="inp" id="gbAlc"></select>
+    <div class="ft"><button class="bt" onclick="$('ovBlq').classList.remove('on')">Cancelar</button><button class="btn-pri" onclick="guardarBloque()">Guardar</button></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION_APP = '2026-10-20.2';
+const VERSION_APP = '2026-10-20.3';
 const SB_URL  = 'https://ojzcxwhoinmljospgmfp.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemN4d2hvaW5tbGpvc3BnbWZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDY5MTYsImV4cCI6MjA5MzQ4MjkxNn0.jmvVP3weuclrBpQJb57BwmHD77Ofy4CDe43cnmiSFCk';
 const sb = supabase.createClient(SB_URL, SB_ANON);
@@ -609,9 +662,42 @@ const SEED_TPLS = () => [
 ];
 const newDoc = () => ({meta:{campana:'', asunto:'', preheader:'', fecha:'', objetivo:''}, blocks:[]});
 
+// ---------- filas (estructura de columnas, como Beefree) ----------
+// Una fila es un bloque {type:'fila', d:{layout, cols:[{blocks:[...]}, ...]}}; las columnas
+// tienen bloques de contenido comunes adentro (no se anidan filas).
+const LAYOUTS = {
+  '1':  {label:'1 columna',     p:[1]},
+  '2':  {label:'2 columnas',    p:[1,1]},
+  '12': {label:'1/3 + 2/3',     p:[1,2]},
+  '21': {label:'2/3 + 1/3',     p:[2,1]},
+  '3':  {label:'3 columnas',    p:[1,1,1]},
+  '4':  {label:'4 columnas',    p:[1,1,1,1]},
+};
+const ORDEN_LAY = ['1','2','12','21','3','4'];   // a mano: Object.keys pondría '3' y '4' antes de '12'
+const mkFila = lay => ({id:uid(), type:'fila', d:{layout:lay, cols: LAYOUTS[lay].p.map(() => ({blocks:[]}))}});
+function icoLayout(lay){   // dibujo de la fila con sus proporciones (viewBox 0 0 40 40)
+  const p = LAYOUTS[lay].p, tot = p.reduce((a,b) => a + b, 0), gap = 2, ancho = 32 - gap * (p.length - 1);
+  let x = 4;
+  return p.map(v => { const w = ancho * v / tot, r = `<rect x="${x.toFixed(1)}" y="11" width="${w.toFixed(1)}" height="18" rx="1.5"/>`; x += w + gap; return r; }).join('');
+}
+// busca un bloque por id en el email o dentro de las columnas de las filas
+function findBlock(id, list = cur.doc.blocks){
+  for (let i = 0; i < list.length; i++){
+    const b = list[i];
+    if (b.id === id) return {b, list, i};
+    if (b.type === 'fila') for (const c of b.d.cols){ const r = findBlock(id, c.blocks); if (r) return r; }
+  }
+  return null;
+}
+const blockById = id => findBlock(id)?.b;
+// copia con ids nuevos (también los de adentro de una fila)
+function nuevosIds(b){ b.id = uid(); if (b.type === 'fila') b.d.cols.forEach(c => c.blocks.forEach(nuevosIds)); return b; }
+const nombreBloque = b => b.type === 'fila' ? 'Fila · ' + LAYOUTS[b.d.layout]?.label : TYPES[b.type]?.label || b.type;
+const icoBloque = b => b.type === 'fila' ? icoLayout(b.d.layout) : TYPES[b.type]?.ico || '';
+
 // ---------- estado ----------
 let me = null;                  // fila de brf_usuarios
-const D = {marcas:[], um:[], usuarios:[], config:{}, briefs:[], plantillas:[], misMarcas:[]};
+const D = {marcas:[], um:[], usuarios:[], config:{}, briefs:[], plantillas:[], bloques:[], misMarcas:[]};
 let cur = null;                 // brief abierto (con doc)
 let EDIT = false;               // ¿puede editar el brief abierto?
 
@@ -684,6 +770,9 @@ async function cargar(){
     Object.assign(D, {marcas, um, usuarios, briefs, plantillas});
     D.config = {}; config.forEach(c => D.config[c.marca_id] = c);
     D.misMarcas = um.filter(x => x.usuario_id === me.id).map(x => x.marca_id);
+    // bloques guardados (briefs-v3.sql): si la tabla todavía no existe, la app sigue andando sin ellos
+    try { D.bloques = await fetchAll('brf_bloques', '*', q => q.order('nombre')); D.sinBloques = false; }
+    catch(e){ D.bloques = []; D.sinBloques = true; }
     await sembrar();
   } catch(e){ toast('No se pudieron cargar los datos: ' + (e.message || e), true); }
 }
@@ -787,7 +876,7 @@ function opcionesPlantilla(){
 async function crearBrief(){
   const m = +$('nbMarca').value; if (!m) return toast('Elegí la marca', true);
   const tpl = D.plantillas.find(p => p.id === +$('nbTpl').value);
-  const doc = newDoc(); if (tpl) doc.blocks = clone(tpl.blocks).map(b => (b.id = uid(), b));
+  const doc = newDoc(); if (tpl) doc.blocks = clone(tpl.blocks).map(nuevosIds);
   const r = await sb.from('brf_briefs').insert({marca_id:m, nombre:'', doc, creado_por:nombreUsuario(), actualizado_por:nombreUsuario()}).select(LIST_COLS).single();
   if (r.error) return toast(r.error.message, true);
   D.briefs.unshift(r.data); cerrarModal(); location.hash = 'brief/' + r.data.id;
@@ -814,7 +903,7 @@ async function borrarBrief(id){
 // Generales: las arma y mantiene el admin. De marca: las arma quien edita la marca,
 // y puede proponerlas para todas; el admin las aprueba (se crea una copia general).
 const PROP_LABEL = {pendiente:'Esperando aprobación', aprobada:'Aprobada como general', rechazada:'No aprobada'};
-const miniPrev = p => `<div class="prev" title="${p.blocks.map(b => TYPES[b.type]?.label).join(' · ')}">${p.blocks.slice(0, 12).map(b => `<svg viewBox="0 0 40 40">${TYPES[b.type]?.ico || ''}</svg>`).join('')}</div>`;
+const miniPrev = p => `<div class="prev" title="${p.blocks.map(nombreBloque).join(' · ')}">${p.blocks.slice(0, 12).map(b => `<svg viewBox="0 0 40 40">${icoBloque(b)}</svg>`).join('')}</div>`;
 $('pQ').addEventListener('input', () => pintarPlantillas());
 function renderPlantillas(){
   $('btnNuevaTpl').hidden = !(me.rol === 'admin' || marcasEditables().length);
@@ -1091,6 +1180,7 @@ function setTab(t){
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   document.querySelectorAll('.tabp').forEach(p => p.hidden = p.id !== 'tab-' + t);
   if (t === 'plantillas') renderTpls();
+  if (t === 'guardados') renderBloques();
 }
 function setMob(on){
   $('sheet').classList.toggle('mob', on); $('vMob').classList.toggle('on', on); $('vDesk').classList.toggle('on', !on);
@@ -1099,9 +1189,16 @@ function setMob(on){
 // paleta de bloques
 $('palList').innerHTML = Object.entries(TYPES).map(([k,t]) =>
   `<div class="tile" draggable="true" data-type="${k}" title="${t.label}"><svg viewBox="0 0 40 40">${t.ico}</svg><span>${t.tile}</span></div>`).join('');
+const alFinal = b => { if (!EDIT) return; cur.doc.blocks.push(b); save(); renderEmail(); document.querySelector('.stage').scrollTo({top:1e6, behavior:'smooth'}); };
 document.querySelectorAll('.tile[data-type]').forEach(el => {
-  el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', 'new:' + el.dataset.type); e.dataTransfer.effectAllowed = 'copyMove'; });
-  el.addEventListener('click', () => { if (!EDIT) return; cur.doc.blocks.push(mk(el.dataset.type)); save(); renderEmail(); document.querySelector('.stage').scrollTo({top:1e6, behavior:'smooth'}); });
+  el.addEventListener('dragstart', e => { dragKind = 'bloque'; e.dataTransfer.setData('text/plain', 'new:' + el.dataset.type); e.dataTransfer.effectAllowed = 'copyMove'; });
+  el.addEventListener('click', () => alFinal(mk(el.dataset.type)));
+});
+// filas
+$('filaList').innerHTML = ORDEN_LAY.map(k => `<div class="tile filatile" draggable="true" data-fila="${k}" title="Arrastrala al email"><svg viewBox="0 0 40 40">${icoLayout(k)}</svg><span>${LAYOUTS[k].label}</span></div>`).join('');
+document.querySelectorAll('.tile[data-fila]').forEach(el => {
+  el.addEventListener('dragstart', e => { dragKind = 'fila'; e.dataTransfer.setData('text/plain', 'fila:' + el.dataset.fila); e.dataTransfer.effectAllowed = 'copy'; });
+  el.addEventListener('click', () => alFinal(mkFila(el.dataset.fila)));
 });
 
 // ---------- elementos sobre las imágenes ----------
@@ -1161,7 +1258,7 @@ document.addEventListener('pointermove', e => {
 document.addEventListener('pointerup', () => {
   if (!mov) return;
   const it = mov.it, f = it.closest('.lay').parentElement.closest('[data-img]').dataset.img;
-  const b = cur.doc.blocks.find(x => x.id === it.closest('.blk').dataset.id);
+  const b = blockById(it.closest('.blk').dataset.id);
   const o = getP(b.d, f + 'Lay')[+it.dataset.i];
   o.x = +parseFloat(it.style.left).toFixed(1); o.y = +parseFloat(it.style.top).toFixed(1); o.w = +parseFloat(it.style.width).toFixed(1);
   it.classList.remove('act'); mov = null; save();
@@ -1208,15 +1305,39 @@ function renderEmail(){
   const el = $('email'), bl = cur.doc.blocks;
   $('count').textContent = bl.length + (bl.length === 1 ? ' bloque' : ' bloques');
   if (!bl.length){ el.innerHTML = EDIT ? `<div class="empty">Arrastrá bloques acá desde el panel de la derecha<small>o elegí una plantilla en la pestaña “Plantillas”</small></div>` : `<div class="empty">Este brief todavía no tiene contenido.</div>`; return; }
-  el.innerHTML = bl.map(b => `<div class="blk" data-id="${b.id}">
-    ${EDIT ? `<span class="tag">${TYPES[b.type].label}</span>
+  el.innerHTML = bl.map(blockWrap).join('');
+}
+function blockWrap(b){
+  if (b.type === 'fila') return filaHTML(b);
+  return `<div class="blk" data-id="${b.id}">
+    ${EDIT ? `<span class="tag">${TYPES[b.type]?.label || b.type}</span>
     <div class="tb">
-      <button class="h" draggable="true" title="Arrastrar">⠿</button>
+      <button class="h" draggable="true" title="Arrastrar (también adentro o afuera de una columna)">⠿</button>
       ${b.align ? `<button data-a="align" title="Alinear">${b.align==='center'?'≡':'☰'}</button>` : ''}
       ${b.type==='col2'||b.type==='col3' ? `<button data-a="addcol" title="Sumar columna">＋</button><button data-a="rmcol" title="Quitar columna">－</button>` : ''}
       <button data-a="up" title="Subir">↑</button><button data-a="down" title="Bajar">↓</button>
+      <button data-a="guardar" title="Guardar bloque para reutilizar">☆</button>
       <button data-a="dup" title="Duplicar">⧉</button><button data-a="del" title="Borrar">✕</button>
-    </div>` : ''}${blockHTML(b)}</div>`).join('');
+    </div>` : ''}${blockHTML(b)}</div>`;
+}
+function filaHTML(b){
+  const lay = LAYOUTS[b.d.layout] || LAYOUTS['2'];
+  return `<div class="blk fila" data-id="${b.id}">
+    ${EDIT ? `<div class="tbf"><span class="fl">FILA</span>
+      <button class="h" draggable="true" title="Arrastrar la fila">⠿</button>
+      <button data-a="lay" title="Cambiar columnas (${lay.label})">▥</button>
+      <button data-a="up" title="Subir">↑</button><button data-a="down" title="Bajar">↓</button>
+      <button data-a="guardar" title="Guardar fila para reutilizar">☆</button>
+      <button data-a="dup" title="Duplicar fila">⧉</button><button data-a="del" title="Borrar fila">✕</button></div>` : ''}
+    <div class="row-f" style="grid-template-columns:${lay.p.map(x => x + 'fr').join(' ')}">${b.d.cols.map((c, i) =>
+      `<div class="colf" data-col="${i}">${c.blocks.length ? c.blocks.map(blockWrap).join('') : (EDIT ? '<div class="colvacia">Soltá contenido acá</div>' : '')}</div>`).join('')}</div></div>`;
+}
+// cambia la cantidad de columnas; si sobran, su contenido pasa a la última que queda
+function cambiarLayout(b){
+  const sig = ORDEN_LAY[(ORDEN_LAY.indexOf(b.d.layout) + 1) % ORDEN_LAY.length], n = LAYOUTS[sig].p.length;
+  while (b.d.cols.length < n) b.d.cols.push({blocks:[]});
+  while (b.d.cols.length > n){ const sobra = b.d.cols.pop(); b.d.cols[b.d.cols.length - 1].blocks.push(...sobra.blocks); }
+  b.d.layout = sig; toast('Fila: ' + LAYOUTS[sig].label);
 }
 
 function renderHead(){
@@ -1282,7 +1403,7 @@ $('sheet').addEventListener('input', e => {
     cur.doc.meta[t.dataset.m] = v;
     if (t.dataset.m === 'campana') $('campLbl').textContent = v;
   } else {
-    const b = cur.doc.blocks.find(x => x.id === t.closest('.blk').dataset.id);
+    const b = blockById(t.closest('.blk').dataset.id);
     setP(b.d, t.dataset.f, v);
   }
   if (!t.textContent) t.innerHTML = '';   // vuelve a mostrar el placeholder
@@ -1296,11 +1417,14 @@ $('email').addEventListener('click', e => {
     email.querySelectorAll('.addov.open').forEach(x => x.classList.remove('open'));
     box.classList.toggle('open', !abierto); return;
   }
-  const bl = cur.doc.blocks, i = bl.findIndex(x => x.id === btn.closest('.blk').dataset.id), b = bl[i];
+  const hit = findBlock(btn.closest('.blk').dataset.id); if (!hit) return;
+  const {b, list:bl, i} = hit;
+  if (btn.dataset.a === 'guardar') return abrirGuardarBloque(b);
   switch(btn.dataset.a){
     case 'up':    if (i > 0) [bl[i-1], bl[i]] = [bl[i], bl[i-1]]; break;
     case 'down':  if (i < bl.length-1) [bl[i+1], bl[i]] = [bl[i], bl[i+1]]; break;
-    case 'dup':   bl.splice(i+1, 0, Object.assign(clone(b), {id:uid()})); break;
+    case 'dup':   bl.splice(i+1, 0, nuevosIds(clone(b))); break;
+    case 'lay':   cambiarLayout(b); break;
     case 'del':   bl.splice(i, 1); break;
     case 'align': b.align = b.align === 'center' ? 'left' : 'center'; break;
     case 'addcol': if (b.d.items.length < 4){ b.d.items.push(item()); b.type = 'col' + Math.min(b.d.items.length,3); } break;
@@ -1325,11 +1449,11 @@ document.addEventListener('paste', e => {
   e.preventDefault();
   const box = document.activeElement?.closest?.('.img');
   if (box) subirImg(f, box.closest('.blk').dataset.id, box.dataset.img);
-  else imagenNueva(f, cur.doc.blocks.length);   // pegada sin recuadro elegido: imagen nueva al final
+  else imagenNueva(f, cur.doc.blocks, cur.doc.blocks.length);   // pegada sin recuadro elegido: imagen nueva al final
 });
-// crea un bloque de imagen en la posición i y le sube el archivo
-function imagenNueva(file, i){
-  const b = mk('imagen'); cur.doc.blocks.splice(i, 0, b);
+// crea un bloque de imagen en la posición i de la lista (email o columna) y le sube el archivo
+function imagenNueva(file, list, i){
+  const b = mk('imagen'); list.splice(i, 0, b);
   save(); renderEmail(); subirImg(file, b.id, 'img');
 }
 // achica fotos grandes antes de subir (max 1400px de ancho)
@@ -1357,7 +1481,7 @@ async function subirImg(file, blockId, f){
   if (r.error) return toast('No se pudo subir: ' + r.error.message, true);
   const url = sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
   if (cur !== doc) return;
-  const b = cur.doc.blocks.find(x => x.id === blockId); if (!b) return;
+  const b = blockById(blockId); if (!b) return;
   setP(b.d, f + 'Url', url); save(); renderEmail(); toast('Imagen subida');
 }
 
@@ -1366,19 +1490,33 @@ const email = $('email');
 const dropLine = Object.assign(document.createElement('div'), {className:'dropline'});
 const esArchivo = e => [...(e.dataTransfer?.types || [])].includes('Files');
 
+// qué se está arrastrando: 'fila' no puede entrar en una columna; 'bloque' sí
+let dragKind = null;
+document.addEventListener('dragend', () => { dragKind = null; });
+
 email.addEventListener('dragstart', e => {
   const h = e.target.closest?.('.h'); if (!h) return;
   const blk = h.closest('.blk');
+  dragKind = blk.classList.contains('fila') ? 'fila' : 'bloque';
   e.dataTransfer.setData('text/plain', 'move:' + blk.dataset.id);
   e.dataTransfer.setDragImage(blk, 20, 20);
   setTimeout(() => blk.classList.add('dragging'));
 });
 email.addEventListener('dragend', () => { dropLine.remove(); email.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging')); });
 
-function dropIndex(y){
-  const blks = [...email.querySelectorAll('.blk')];
-  for (let i = 0; i < blks.length; i++){ const r = blks[i].getBoundingClientRect(); if (y < r.top + r.height/2) return i; }
-  return blks.length;
+// dónde cae lo que se suelta: dentro de una columna (si no es una fila) o en el email
+function destino(e){
+  const col = dragKind !== 'fila' ? e.target.closest?.('.colf') : null;
+  if (col){
+    const fila = blockById(col.closest('.blk.fila').dataset.id);
+    return {list: fila.d.cols[+col.dataset.col].blocks, cont: col, ...posEn(col, e.clientY)};
+  }
+  return {list: cur.doc.blocks, cont: email, ...posEn(email, e.clientY)};
+}
+function posEn(cont, y){
+  const kids = [...cont.querySelectorAll(':scope > .blk')];
+  for (let i = 0; i < kids.length; i++){ const r = kids[i].getBoundingClientRect(); if (y < r.top + r.height / 2) return {idx:i, ref:kids[i]}; }
+  return {idx:kids.length, ref:null};
 }
 email.addEventListener('dragover', e => {
   if (!EDIT) return;
@@ -1387,9 +1525,8 @@ email.addEventListener('dragover', e => {
   if (dragOv){ dropLine.remove(); e.target.closest?.('.img')?.classList.add('drop'); return; }
   const caja = e.target.closest?.('.img');
   if (esArchivo(e) && caja){ dropLine.remove(); caja.classList.add('drop'); return; }
-  const blks = [...email.querySelectorAll('.blk')], i = dropIndex(e.clientY);
-  if (!blks.length) return;
-  if (i < blks.length) email.insertBefore(dropLine, blks[i]); else email.appendChild(dropLine);
+  const d = destino(e);
+  if (d.ref) d.cont.insertBefore(dropLine, d.ref); else d.cont.appendChild(dropLine);
 });
 email.addEventListener('dragleave', e => { if (!email.contains(e.relatedTarget)){ dropLine.remove(); email.querySelectorAll('.img.drop').forEach(x => x.classList.remove('drop')); } });
 email.addEventListener('drop', e => {
@@ -1402,24 +1539,38 @@ email.addEventListener('drop', e => {
     const t = dragOv; dragOv = null;
     if (!box) return toast('Soltalo encima de una imagen', true);
     const r = (box.querySelector('.iw') || box).getBoundingClientRect();
-    const b = cur.doc.blocks.find(x => x.id === box.closest('.blk').dataset.id);
+    const b = blockById(box.closest('.blk').dataset.id);
     sumarOv(b, box.dataset.img, t, (e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 100);
     save(); renderEmail(); return;
   }
+  const d = destino(e); dragKind = null;
   if (esArchivo(e)){
     const f = [...e.dataTransfer.files].find(x => x.type.startsWith('image/'));
     if (!f) return toast('Eso no es una imagen', true);
     if (box) subirImg(f, box.closest('.blk').dataset.id, box.dataset.img);
-    else imagenNueva(f, dropIndex(e.clientY));   // fuera de un recuadro: bloque de imagen nuevo ahí
+    else imagenNueva(f, d.list, d.idx);   // fuera de un recuadro: bloque de imagen nuevo ahí
     return;
   }
   const data = e.dataTransfer.getData('text/plain');
-  const bl = cur.doc.blocks; let i = dropIndex(e.clientY);
-  if (data.startsWith('new:')){ const t = data.slice(4); if (TYPES[t]) bl.splice(i, 0, mk(t)); }
+  let nuevo = null;
+  if (data.startsWith('new:')){ const t = data.slice(4); if (TYPES[t]) nuevo = mk(t); }
+  else if (data.startsWith('fila:')){ const l = data.slice(5); if (LAYOUTS[l]) nuevo = mkFila(l); }
+  else if (data.startsWith('saved:')){
+    const s = D.bloques.find(x => x.id === +data.slice(6)); if (!s) return;
+    nuevo = nuevosIds(clone(s.bloque));
+    if (nuevo.type === 'fila' && d.list !== cur.doc.blocks) return toast('Una fila no puede ir dentro de otra fila', true);
+  }
   else if (data.startsWith('move:')){
-    const from = bl.findIndex(x => x.id === data.slice(5)); if (from < 0) return;
-    const [b] = bl.splice(from, 1); if (from < i) i--; bl.splice(i, 0, b);
-  } else return;
+    const hit = findBlock(data.slice(5)); if (!hit) return;
+    if (hit.b.type === 'fila' && d.list !== cur.doc.blocks) return;
+    let i = d.idx;
+    hit.list.splice(hit.i, 1);
+    if (hit.list === d.list && hit.i < i) i--;
+    d.list.splice(i, 0, hit.b);
+    save(); renderEmail(); return;
+  }
+  if (!nuevo) return;
+  d.list.splice(d.idx, 0, nuevo);
   save(); renderEmail();
 });
 
@@ -1457,6 +1608,50 @@ async function copiarLink(){
   catch(e){ prompt('Copiá el link:', location.href); }
 }
 
+// ---------- bloques guardados ----------
+// generales (marca_id null, los guarda el admin) + los de la marca del brief
+function renderBloques(){
+  if (D.sinBloques){ $('blqList').innerHTML = '<p class="small">Para usar bloques guardados falta correr <b>briefs-v3.sql</b> en Supabase.</p>'; return; }
+  const m = cur.marca_id;
+  const bs = D.bloques.filter(x => x.marca_id === null || x.marca_id === m)
+    .sort((a,b) => (b.marca_id === m) - (a.marca_id === m) || a.nombre.localeCompare(b.nombre));
+  $('blqList').innerHTML = bs.length ? bs.map(x => `<div class="blq" draggable="true" data-blq="${x.id}" title="Arrastralo al email o hacé click para sumarlo al final">
+      <svg viewBox="0 0 40 40">${icoBloque(x.bloque)}</svg>
+      <div style="flex:1;min-width:0"><div class="nm">${esc(x.nombre)}</div><div class="small">${esc(nombreBloque(x.bloque))} · ${x.marca_id ? esc(marcaById(x.marca_id)?.nombre || '') : 'General'}</div></div>
+      ${puedeTocarTpl(x) ? `<button class="bt del" title="Borrar" onclick="event.stopPropagation();borrarBloque(${x.id})">✕</button>` : ''}</div>`).join('')
+    : '<p class="small">Todavía no hay bloques guardados para esta marca.</p>';
+  document.querySelectorAll('#blqList .blq').forEach(el => {
+    const s = D.bloques.find(x => x.id === +el.dataset.blq);
+    el.addEventListener('dragstart', e => { dragKind = s.bloque.type === 'fila' ? 'fila' : 'bloque'; e.dataTransfer.setData('text/plain', 'saved:' + s.id); e.dataTransfer.effectAllowed = 'copy'; });
+    el.addEventListener('click', () => { alFinal(nuevosIds(clone(s.bloque))); toast('“' + s.nombre + '” agregado al final'); });
+  });
+}
+let bloqueAGuardar = null;
+function abrirGuardarBloque(b){
+  if (D.sinBloques) return toast('Falta correr briefs-v3.sql en Supabase para guardar bloques', true);
+  bloqueAGuardar = clone(b);
+  const m = marcaById(cur.marca_id), ops = [];
+  if (m && puedeEditar(m.id)) ops.push(`<option value="${m.id}">Solo ${esc(m.nombre)}</option>`);
+  if (me.rol === 'admin') ops.push('<option value="">General (todas las marcas)</option>');
+  if (!ops.length) return toast('No tenés permiso para guardar bloques acá', true);
+  $('gbAlc').innerHTML = ops.join(''); $('gbNom').value = '';
+  $('gbNom').placeholder = nombreBloque(b);
+  $('ovBlq').classList.add('on'); $('gbNom').focus();
+}
+async function guardarBloque(){
+  const nombre = $('gbNom').value.trim() || $('gbNom').placeholder;
+  const r = await sb.from('brf_bloques').insert({nombre, marca_id: $('gbAlc').value ? +$('gbAlc').value : null, bloque: bloqueAGuardar, creado_por:nombreUsuario()}).select().single();
+  if (r.error) return toast(r.error.message, true);
+  D.bloques.push(r.data); $('ovBlq').classList.remove('on');
+  toast('Guardado: lo encontrás en la pestaña Guardados'); if (!$('tab-guardados').hidden) renderBloques();
+}
+async function borrarBloque(id){
+  if (!confirm('¿Borrar este bloque guardado? Los briefs donde ya se usó no cambian.')) return;
+  const r = await sb.from('brf_bloques').delete().eq('id', id);
+  if (r.error) return toast(r.error.message, true);
+  D.bloques = D.bloques.filter(x => x.id !== id); renderBloques();
+}
+
 // ---------- plantillas ----------
 const puedeTocarTpl = p => p.marca_id === null ? me.rol === 'admin' : puedeEditar(p.marca_id);
 function renderTpls(){
@@ -1487,7 +1682,7 @@ async function saveTpl(){
 function useTpl(id){
   const t = D.plantillas.find(x => x.id === id);
   if (cur.doc.blocks.length && !confirm('Esto reemplaza los bloques del brief actual. ¿Seguimos?')) return;
-  cur.doc.blocks = clone(t.blocks).map(b => (b.id = uid(), b));
+  cur.doc.blocks = clone(t.blocks).map(nuevosIds);
   save(); renderAll(); setTab('contenido'); toast('Plantilla “' + t.nombre + '” aplicada');
 }
 async function overwriteTpl(id){
